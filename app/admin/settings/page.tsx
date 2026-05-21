@@ -3,12 +3,14 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Save, ShieldCheck } from "lucide-react";
 import { ErrorState, LoadingState } from "@/components/ui/state";
+import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest } from "@/lib/api/client";
 import type { SettingsResponse } from "@/lib/types/api";
 import type { AppSettings, SupportedCurrency } from "@/lib/types/domain";
 import { formatDateTime } from "@/lib/utils/format";
 
 export default function AdminSettingsPage() {
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [baseCurrency, setBaseCurrency] = useState<SupportedCurrency>("AED");
   const [allowUsd, setAllowUsd] = useState(true);
@@ -32,13 +34,20 @@ export default function AdminSettingsPage() {
     setError(null);
     setSaving(true);
     try {
-      const data = await apiRequest<SettingsResponse>("/settings", {
+      const data = await apiRequest<SettingsResponse & { pending?: boolean; approvalId?: string }>("/settings", {
         method: "PATCH",
         body: JSON.stringify({ baseCurrency, allowUsd })
       });
-      setSettings(data.settings);
-      setBaseCurrency(data.settings.baseCurrency);
-      setAllowUsd(data.settings.allowUsd);
+      if (data.pending && data.approvalId) {
+        setPendingApprovalId(data.approvalId);
+      } else {
+        setPendingApprovalId(null);
+        if (data.settings) {
+          setSettings(data.settings);
+          setBaseCurrency(data.settings.baseCurrency);
+          setAllowUsd(data.settings.allowUsd);
+        }
+      }
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unable to save settings");
     } finally {
@@ -55,6 +64,7 @@ export default function AdminSettingsPage() {
         <p className="mt-1 text-[13px] text-slate-500">Administrative controls for portal-wide currency behavior.</p>
       </div>
 
+      {pendingApprovalId ? <PendingApprovalBanner approvalId={pendingApprovalId} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <section className="grid gap-4 xl:grid-cols-[420px_1fr]">

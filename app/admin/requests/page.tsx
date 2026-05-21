@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, FileCheck2, X } from "lucide-react";
 import { RequestStatusBadge } from "@/components/ui/badges";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
+import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest } from "@/lib/api/client";
 import type { ClientsResponse, RequestResponse, RequestsResponse } from "@/lib/types/api";
 import type { ClientUser, InvestmentRequest, RequestStatus } from "@/lib/types/domain";
@@ -18,6 +19,7 @@ export default function AdminRequestsPage() {
   const [clientId, setClientId] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   async function load() {
     const [requestsData, clientsData] = await Promise.all([
@@ -49,11 +51,18 @@ export default function AdminRequestsPage() {
       nextStatus === "rejected" ? window.prompt("Rejection reason", request.rejectionReason ?? "Rejected by administrator") : null;
     if (nextStatus === "rejected" && !rejectionReason) return;
 
-    const data = await apiRequest<RequestResponse>(`/requests/${request.id}/status`, {
+    const data = await apiRequest<RequestResponse & { pending?: boolean; approvalId?: string }>(`/requests/${request.id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status: nextStatus, rejectionReason })
     });
-    setRequests((current) => current.map((item) => (item.id === request.id ? data.request : item)));
+    if (data.pending && data.approvalId) {
+      setPendingApprovalId(data.approvalId);
+      return;
+    }
+    setPendingApprovalId(null);
+    if (data.request) {
+      setRequests((current) => current.map((item) => (item.id === request.id ? data.request : item)));
+    }
   }
 
   if (loading) return <LoadingState label="Loading requests" />;
@@ -65,6 +74,7 @@ export default function AdminRequestsPage() {
         <p className="mt-1 text-[13px] text-slate-500">Review, approve, reject, and mark investment requests as executed.</p>
       </div>
 
+      {pendingApprovalId ? <PendingApprovalBanner approvalId={pendingApprovalId} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <div className="card">

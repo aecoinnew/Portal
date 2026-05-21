@@ -8,7 +8,7 @@ export function auditLog(
   entityId: string,
   metadata?: Record<string, unknown>
 ) {
-  if (admin.role !== "admin") return;
+  if (admin.role === "client") return;
 
   db.prepare(`
     INSERT INTO audit_logs (id, admin_user_id, action, entity_type, entity_id, metadata, created_at)

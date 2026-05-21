@@ -1,4 +1,13 @@
-export type UserRole = "client" | "admin";
+export type UserRole =
+  | "super_admin"
+  | "admin"
+  | "operations"
+  | "relationship_manager"
+  | "compliance"
+  | "finance"
+  | "auditor"
+  | "client";
+
 export type UserStatus = "active" | "suspended";
 export type ProductType = "stock" | "crypto" | "fund" | "sukuk" | "private";
 export type PricingMode = "api" | "manual";
@@ -6,6 +15,36 @@ export type PriceSource = "api" | "manual";
 export type SupportedCurrency = "AED" | "USD";
 export type RequestType = "buy" | "sell" | "subscribe" | "withdraw";
 export type RequestStatus = "pending" | "approved" | "rejected" | "executed";
+export type ApprovalStatus = "pending" | "approved" | "rejected" | "cancelled" | "executing" | "executed";
+
+export const ADMIN_ROLES: UserRole[] = [
+  "super_admin",
+  "admin",
+  "operations",
+  "relationship_manager",
+  "compliance",
+  "finance",
+  "auditor"
+];
+
+export function isAdminRole(role: UserRole): boolean {
+  return ADMIN_ROLES.includes(role);
+}
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  super_admin: "Super Administrator",
+  admin: "Administrator",
+  operations: "Operations",
+  relationship_manager: "Relationship Manager",
+  compliance: "Compliance Officer",
+  finance: "Finance",
+  auditor: "Auditor",
+  client: "Client"
+};
+
+export function roleLabel(role: UserRole): string {
+  return ROLE_LABELS[role] ?? role;
+}
 
 export type AuthUser = {
   id: string;
@@ -101,6 +140,26 @@ export type Statement = {
   fileName: string;
   fileSize: number;
   createdAt: string;
+};
+
+export type ApprovalRequest = {
+  id: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  requestedByUserId: string;
+  requestedByName?: string;
+  assignedRole: string | null;
+  status: ApprovalStatus;
+  beforeValue: string | null;
+  afterValue: string | null;
+  reason: string | null;
+  decisionByUserId: string | null;
+  decisionByName?: string;
+  decisionReason: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+  executedAt: string | null;
 };
 
 export type AuditLog = {

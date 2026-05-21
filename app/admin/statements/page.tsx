@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Download, FileUp, Trash2 } from "lucide-react";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
+import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest, downloadFromApi } from "@/lib/api/client";
 import type { ClientsResponse, StatementResponse, StatementsResponse } from "@/lib/types/api";
 import type { ClientUser, Statement } from "@/lib/types/domain";
@@ -18,6 +19,7 @@ export default function AdminStatementsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   const activeClients = useMemo(() => clients.filter((client) => client.status === "active"), [clients]);
   const rows = useMemo(
@@ -56,10 +58,16 @@ export default function AdminStatementsPage() {
       form.set("period", period);
       form.set("file", file);
 
-      const data = await apiRequest<StatementResponse>("/statements", {
+      const data = await apiRequest<StatementResponse & { pending?: boolean; approvalId?: string }>("/statements", {
         method: "POST",
         body: form
       });
+      if (data.pending && data.approvalId) {
+        setPendingApprovalId(data.approvalId);
+        // statement is in quarantine, no DB row yet - do not append to local list
+      } else {
+        setPendingApprovalId(null);
+      }
 
       setStatements((current) => [data.statement, ...current]);
       setPeriod("");
@@ -74,7 +82,12 @@ export default function AdminStatementsPage() {
   }
 
   async function deleteStatement(statement: Statement) {
-    await apiRequest(`/statements/${statement.id}`, { method: "DELETE" });
+    const resp = await apiRequest<{ pending?: boolean; approvalId?: string }>(`/statements/${statement.id}`, { method: "DELETE" });
+    if (resp?.pending && resp.approvalId) {
+      setPendingApprovalId(resp.approvalId);
+      return;
+    }
+    setPendingApprovalId(null);
     setStatements((current) => current.filter((item) => item.id !== statement.id));
   }
 
@@ -87,6 +100,7 @@ export default function AdminStatementsPage() {
         <p className="mt-1 text-[13px] text-slate-500">Upload and manage client PDF statements.</p>
       </div>
 
+      {pendingApprovalId ? <PendingApprovalBanner approvalId={pendingApprovalId} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <section className="grid gap-4 xl:grid-cols-[360px_1fr]">

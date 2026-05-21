@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Plus, RefreshCw, Save, X } from "lucide-react";
 import { UserStatusBadge } from "@/components/ui/badges";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
+import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest } from "@/lib/api/client";
 import type { ClientResponse, ClientsResponse } from "@/lib/types/api";
 import type { ClientUser, UserRole, UserStatus } from "@/lib/types/domain";
@@ -22,6 +23,7 @@ export default function AdminClientsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   async function load() {
     const data = await apiRequest<ClientsResponse>("/clients");
@@ -70,10 +72,16 @@ export default function AdminClientsPage() {
         phone: phone || null,
         relationshipManager: relationshipManager || null
       };
-      const data = await apiRequest<ClientResponse>(editingId ? `/clients/${editingId}` : "/clients", {
+      const data = await apiRequest<ClientResponse & { pending?: boolean; approvalId?: string }>(editingId ? `/clients/${editingId}` : "/clients", {
         method: editingId ? "PATCH" : "POST",
         body: JSON.stringify(payload)
       });
+      if (data.pending && data.approvalId) {
+        setPendingApprovalId(data.approvalId);
+        resetForm();
+        return;
+      }
+      setPendingApprovalId(null);
       setClients((current) => {
         const next = editingId ? current.map((item) => (item.id === editingId ? data.client : item)) : [...current, data.client];
         return next.sort((a, b) => a.name.localeCompare(b.name));
@@ -87,10 +95,15 @@ export default function AdminClientsPage() {
   }
 
   async function updateStatus(client: ClientUser, status: UserStatus) {
-    const data = await apiRequest<ClientResponse>(`/clients/${client.id}`, {
+    const data = await apiRequest<ClientResponse & { pending?: boolean; approvalId?: string }>(`/clients/${client.id}`, {
       method: "PATCH",
       body: JSON.stringify({ status })
     });
+    if (data.pending && data.approvalId) {
+      setPendingApprovalId(data.approvalId);
+      return;
+    }
+    setPendingApprovalId(null);
     setClients((current) => current.map((item) => (item.id === client.id ? data.client : item)));
   }
 
@@ -103,6 +116,7 @@ export default function AdminClientsPage() {
         <p className="mt-1 text-[13px] text-slate-500">Client records and login-linked user accounts.</p>
       </div>
 
+      {pendingApprovalId ? <PendingApprovalBanner approvalId={pendingApprovalId} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <section className="grid gap-4 xl:grid-cols-[380px_1fr]">

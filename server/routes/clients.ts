@@ -2,14 +2,14 @@ import bcrypt from "bcrypt";
 import { Router } from "express";
 import { z } from "zod";
 import type { UserRole, UserStatus } from "../../lib/types/domain.js";
-import { db, nowIso, uid } from "../db/connection.js";
+import { db, uid } from "../db/connection.js";
 import { authenticate, requireAdmin, type AuthedRequest } from "../middleware/auth.js";
 import { ApiError } from "../middleware/error.js";
 import { auditLog } from "../services/auditService.js";
+import { submitForApproval } from "../services/approvalExecutor.js";
 import { mapClient } from "../services/mappers.js";
 
 export const clientsRouter = Router();
-
 clientsRouter.use(authenticate, requireAdmin);
 
 const userCreateSchema = z.object({
@@ -44,7 +44,6 @@ clientsRouter.get("/", (req, res) => {
       `
     )
     .all(role) as Array<Record<string, unknown>>;
-
   res.json({ clients: rows.map(mapClient) });
 });
 
@@ -52,44 +51,39 @@ clientsRouter.post("/", async (req, res, next) => {
   try {
     const body = userCreateSchema.parse(req.body);
     const admin = (req as unknown as AuthedRequest).user;
-    const id = uid("usr");
-    const timestamp = nowIso();
+
+    // Pre-check uniqueness so we can return 409 immediately rather than failing at execute time.
+    const dup = db.prepare("SELECT id FROM users WHERE email = ? COLLATE NOCASE").get(body.email);
+    if (dup) throw new ApiError(409, "Email already exists", "email_exists");
+
+    const userId = uid("usr");
+    // Hash the password BEFORE storing in approval. We never persist plaintext.
     const passwordHash = await bcrypt.hash(body.password, 12);
 
-    db.prepare(
-      `
-      INSERT INTO users
-      (id, name, email, password_hash, role, status, phone, relationship_manager, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `
-    ).run(
-      id,
-      body.name,
-      body.email,
-      passwordHash,
-      body.role,
-      body.status,
-      body.phone ?? null,
-      body.relationshipManager ?? null,
-      timestamp,
-      timestamp
-    );
-
-    auditLog(admin, "user.created", "user", id, {
-      email: body.email,
-      role: body.role,
-      status: body.status
+    const approval = submitForApproval({
+      entityType: "user",
+      entityId: userId,
+      action: "user.created",
+      requestedBy: admin,
+      beforePayload: null,
+      afterPayload: {
+        name: body.name,
+        email: body.email,
+        passwordHash, // hashed - cannot be reversed
+        role: body.role,
+        status: body.status,
+        phone: body.phone ?? null,
+        relationshipManager: body.relationshipManager ?? null
+      },
+      reason: `User create: ${body.email} (role=${body.role})`
     });
-
-    const row = db
-      .prepare("SELECT id, name, email, role, status, phone, relationship_manager, created_at, updated_at FROM users WHERE id = ?")
-      .get(id) as Record<string, unknown>;
-
-    res.status(201).json({ client: mapClient(row) });
+    auditLog(admin, "user.create.submitted", "user", userId, {
+      approvalId: approval.id,
+      email: body.email,
+      role: body.role
+    });
+    res.status(202).json({ pending: true, approvalId: approval.id, userId });
   } catch (error) {
-    if (String(error).includes("UNIQUE constraint failed")) {
-      return next(new ApiError(409, "Email already exists", "email_exists"));
-    }
     next(error);
   }
 });
@@ -98,7 +92,6 @@ clientsRouter.get("/:id", (req, res, next) => {
   const row = db
     .prepare("SELECT id, name, email, role, status, phone, relationship_manager, created_at, updated_at FROM users WHERE id = ?")
     .get(req.params.id) as Record<string, unknown> | undefined;
-
   if (!row) return next(new ApiError(404, "Client not found", "client_not_found"));
   return res.json({ client: mapClient(row) });
 });
@@ -107,45 +100,54 @@ clientsRouter.patch("/:id", async (req, res, next) => {
   try {
     const body = userUpdateSchema.parse(req.body);
     const admin = (req as unknown as AuthedRequest).user;
-    const existing = db.prepare("SELECT id, role, status FROM users WHERE id = ?").get(req.params.id) as
-      | { id: string; role: UserRole; status: UserStatus }
-      | undefined;
-
+    const existing = db
+      .prepare("SELECT id, name, email, role, status FROM users WHERE id = ?")
+      .get(req.params.id) as
+        | { id: string; name: string; email: string; role: UserRole; status: UserStatus }
+        | undefined;
     if (!existing) throw new ApiError(404, "Client not found", "client_not_found");
 
-    const updates: string[] = [];
-    const values: unknown[] = [];
-
-    const set = (column: string, value: unknown) => {
-      updates.push(`${column} = ?`);
-      values.push(value);
-    };
-
-    if (body.name !== undefined) set("name", body.name);
-    if (body.email !== undefined) set("email", body.email);
-    if (body.role !== undefined) set("role", body.role);
-    if (body.status !== undefined) set("status", body.status);
-    if (body.phone !== undefined) set("phone", body.phone);
-    if (body.relationshipManager !== undefined) set("relationship_manager", body.relationshipManager);
-    if (body.password !== undefined) set("password_hash", await bcrypt.hash(body.password, 12));
-
-    if (updates.length > 0) {
-      set("updated_at", nowIso());
-      db.prepare(`UPDATE users SET ${updates.join(", ")} WHERE id = ?`).run(...values, req.params.id);
-      auditLog(admin, "user.updated", "user", req.params.id, {
-        fields: Object.keys(body)
-      });
+    const after: Record<string, unknown> = {};
+    if (body.name !== undefined) after.name = body.name;
+    if (body.email !== undefined) {
+      if (body.email.toLowerCase() !== existing.email.toLowerCase()) {
+        const dup = db.prepare("SELECT id FROM users WHERE email = ? COLLATE NOCASE AND id != ?")
+          .get(body.email, req.params.id);
+        if (dup) throw new ApiError(409, "Email already exists", "email_exists");
+      }
+      after.email = body.email;
+    }
+    if (body.role !== undefined) after.role = body.role;
+    if (body.status !== undefined) after.status = body.status;
+    if (body.phone !== undefined) after.phone = body.phone;
+    if (body.relationshipManager !== undefined) after.relationshipManager = body.relationshipManager;
+    if (body.password !== undefined) {
+      after.passwordHash = await bcrypt.hash(body.password, 12);
+    }
+    if (Object.keys(after).length === 0) {
+      throw new ApiError(400, "No changes provided", "no_changes");
     }
 
-    const row = db
-      .prepare("SELECT id, name, email, role, status, phone, relationship_manager, created_at, updated_at FROM users WHERE id = ?")
-      .get(req.params.id) as Record<string, unknown>;
-
-    res.json({ client: mapClient(row) });
+    const approval = submitForApproval({
+      entityType: "user",
+      entityId: req.params.id,
+      action: "user.updated",
+      requestedBy: admin,
+      beforePayload: {
+        name: existing.name,
+        email: existing.email,
+        role: existing.role,
+        status: existing.status
+      },
+      afterPayload: after,
+      reason: `User ${req.params.id} update`
+    });
+    auditLog(admin, "user.update.submitted", "user", req.params.id, {
+      approvalId: approval.id,
+      fields: Object.keys(after)
+    });
+    res.status(202).json({ pending: true, approvalId: approval.id });
   } catch (error) {
-    if (String(error).includes("UNIQUE constraint failed")) {
-      return next(new ApiError(409, "Email already exists", "email_exists"));
-    }
     next(error);
   }
 });

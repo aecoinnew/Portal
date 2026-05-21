@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { z } from "zod";
-import { db, nowIso, uid } from "../db/connection.js";
+import { db, uid } from "../db/connection.js";
 import { authenticate, requireAdmin, requireSelfOrAdmin, type AuthedRequest } from "../middleware/auth.js";
 import { ApiError } from "../middleware/error.js";
 import { auditLog } from "../services/auditService.js";
+import { submitForApproval } from "../services/approvalExecutor.js";
 import { getPortfolioSummary } from "../services/portfolioService.js";
 
 export const portfolioRouter = Router();
@@ -56,32 +57,52 @@ portfolioRouter.get("/positions", requireAdmin, (_req, res) => {
       `
     )
     .all();
-
   res.json({ positions: rows });
 });
 
+// Phase 3: enforced maker-checker. Submission only.
 portfolioRouter.post("/positions", requireAdmin, (req, res, next) => {
   try {
     const body = positionSchema.parse(req.body);
     const admin = (req as AuthedRequest).user;
     assertClient(body.userId);
     assertProduct(body.productId);
-    const id = uid("pos");
-    const timestamp = nowIso();
 
-    db.prepare(
-      `
-      INSERT INTO portfolio_positions (id, user_id, product_id, quantity, avg_price, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(user_id, product_id) DO UPDATE SET
-        quantity = excluded.quantity,
-        avg_price = excluded.avg_price,
-        updated_at = excluded.updated_at
-      `
-    ).run(id, body.userId, body.productId, body.quantity, body.avgPrice, timestamp, timestamp);
+    // Phase 3.5 fix: if a position already exists for this (user, product),
+    // POST is the wrong verb. Return 409 with the existing id so the caller
+    // can PATCH instead. This prevents approval_requests.entity_id from
+    // pointing to a generated id that ON CONFLICT silently discards.
+    const dup = db
+      .prepare(
+        "SELECT id FROM portfolio_positions WHERE user_id = ? AND product_id = ?"
+      )
+      .get(body.userId, body.productId) as { id: string } | undefined;
+    if (dup) {
+      throw new ApiError(
+        409,
+        "Position already exists for this client and product. Use PATCH /api/portfolio/positions/:id to update.",
+        "position_exists",
+        { existingPositionId: dup.id }
+      );
+    }
 
-    auditLog(admin, "portfolio.position.upserted", "portfolio_position", id, body);
-    res.status(201).json({ portfolio: getPortfolioSummary(body.userId) });
+    // Generate the position id at submit time so the same id is used at execute.
+    const positionId = uid("pos");
+    const approval = submitForApproval({
+      entityType: "portfolio_position",
+      entityId: positionId,
+      action: "portfolio.position.upserted",
+      requestedBy: admin,
+      beforePayload: null,
+      afterPayload: body,
+      reason: `Position create/update for client ${body.userId}`
+    });
+    auditLog(admin, "portfolio.position.upsert.submitted", "portfolio_position", positionId, {
+      approvalId: approval.id,
+      userId: body.userId,
+      productId: body.productId
+    });
+    res.status(202).json({ pending: true, approvalId: approval.id, positionId });
   } catch (error) {
     next(error);
   }
@@ -92,41 +113,33 @@ portfolioRouter.patch("/positions/:id", requireAdmin, (req, res, next) => {
     const body = positionPatchSchema.parse(req.body);
     const admin = (req as AuthedRequest).user;
     const existing = db
-      .prepare("SELECT id, user_id FROM portfolio_positions WHERE id = ?")
-      .get(req.params.id) as { id: string; user_id: string } | undefined;
+      .prepare("SELECT id, user_id, product_id, quantity, avg_price FROM portfolio_positions WHERE id = ?")
+      .get(req.params.id) as
+        | { id: string; user_id: string; product_id: string; quantity: number; avg_price: number }
+        | undefined;
 
     if (!existing) throw new ApiError(404, "Position not found", "position_not_found");
 
-    const updates: string[] = [];
-    const values: unknown[] = [];
-    const set = (column: string, value: unknown) => {
-      updates.push(`${column} = ?`);
-      values.push(value);
-    };
-
-    if (body.userId !== undefined) {
-      assertClient(body.userId);
-      set("user_id", body.userId);
-    }
-    if (body.productId !== undefined) {
-      assertProduct(body.productId);
-      set("product_id", body.productId);
-    }
-    if (body.quantity !== undefined) set("quantity", body.quantity);
-    if (body.avgPrice !== undefined) set("avg_price", body.avgPrice);
-
-    if (updates.length > 0) {
-      set("updated_at", nowIso());
-      db.prepare(`UPDATE portfolio_positions SET ${updates.join(", ")} WHERE id = ?`).run(...values, req.params.id);
-      auditLog(admin, "portfolio.position.updated", "portfolio_position", req.params.id, body);
-    }
-
-    res.json({ portfolio: getPortfolioSummary(body.userId ?? existing.user_id) });
+    const approval = submitForApproval({
+      entityType: "portfolio_position",
+      entityId: req.params.id,
+      action: "portfolio.position.updated",
+      requestedBy: admin,
+      beforePayload: {
+        userId: existing.user_id,
+        productId: existing.product_id,
+        quantity: existing.quantity,
+        avgPrice: existing.avg_price
+      },
+      afterPayload: body,
+      reason: `Position ${req.params.id} update`
+    });
+    auditLog(admin, "portfolio.position.update.submitted", "portfolio_position", req.params.id, {
+      approvalId: approval.id
+    });
+    res.status(202).json({ pending: true, approvalId: approval.id });
   } catch (error) {
-    if (String(error).includes("UNIQUE constraint failed")) {
-      return next(new ApiError(409, "That client already has this product position", "position_exists"));
-    }
-    return next(error);
+    next(error);
   }
 });
 
@@ -134,16 +147,31 @@ portfolioRouter.delete("/positions/:id", requireAdmin, (req, res, next) => {
   try {
     const admin = (req as AuthedRequest).user;
     const existing = db
-      .prepare("SELECT id, user_id FROM portfolio_positions WHERE id = ?")
-      .get(req.params.id) as { id: string; user_id: string } | undefined;
+      .prepare("SELECT id, user_id, product_id, quantity, avg_price FROM portfolio_positions WHERE id = ?")
+      .get(req.params.id) as
+        | { id: string; user_id: string; product_id: string; quantity: number; avg_price: number }
+        | undefined;
 
     if (!existing) throw new ApiError(404, "Position not found", "position_not_found");
-    db.prepare("DELETE FROM portfolio_positions WHERE id = ?").run(req.params.id);
-    auditLog(admin, "portfolio.position.deleted", "portfolio_position", req.params.id, {
-      userId: existing.user_id
-    });
 
-    res.status(204).send();
+    const approval = submitForApproval({
+      entityType: "portfolio_position",
+      entityId: req.params.id,
+      action: "portfolio.position.deleted",
+      requestedBy: admin,
+      beforePayload: {
+        userId: existing.user_id,
+        productId: existing.product_id,
+        quantity: existing.quantity,
+        avgPrice: existing.avg_price
+      },
+      afterPayload: null,
+      reason: `Position ${req.params.id} delete`
+    });
+    auditLog(admin, "portfolio.position.delete.submitted", "portfolio_position", req.params.id, {
+      approvalId: approval.id
+    });
+    res.status(202).json({ pending: true, approvalId: approval.id });
   } catch (error) {
     next(error);
   }

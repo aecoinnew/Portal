@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { z } from "zod";
-import { db, nowIso, uid } from "../db/connection.js";
+import { db } from "../db/connection.js";
 import { authenticate, requireAdmin, type AuthedRequest } from "../middleware/auth.js";
 import { ApiError } from "../middleware/error.js";
 import { auditLog } from "../services/auditService.js";
+import { submitForApproval } from "../services/approvalExecutor.js";
 
 export const pricingRouter = Router();
 
@@ -38,6 +39,7 @@ pricingRouter.get("/", (_req, res) => {
   res.json({ pricing: rows });
 });
 
+// Phase 3: enforced maker-checker. Returns 202 + approval (pending), does NOT update price.
 pricingRouter.patch("/:productId", (req, res, next) => {
   try {
     const body = priceSchema.parse(req.body);
@@ -51,31 +53,30 @@ pricingRouter.patch("/:productId", (req, res, next) => {
       throw new ApiError(400, "Only manual-priced products can be updated here", "manual_price_required");
     }
 
-    const timestamp = nowIso();
-    const priceId = uid("prc");
+    const oldPrice = db
+      .prepare("SELECT price FROM prices WHERE product_id = ?")
+      .get(req.params.productId) as { price: number } | undefined;
 
-    db.transaction(() => {
-      db.prepare(
-        `
-        INSERT INTO prices (id, product_id, price, source, updated_at)
-        VALUES (?, ?, ?, 'manual', ?)
-        ON CONFLICT(product_id) DO UPDATE SET
-          price = excluded.price,
-          source = excluded.source,
-          updated_at = excluded.updated_at
-        `
-      ).run(priceId, req.params.productId, body.price, timestamp);
+    const approval = submitForApproval({
+      entityType: "product",
+      entityId: req.params.productId,
+      action: "price.updated",
+      requestedBy: admin,
+      beforePayload: oldPrice ? { price: oldPrice.price } : null,
+      afterPayload: { price: body.price },
+      reason: `Price update from ${oldPrice?.price ?? "N/A"} to ${body.price}`
+    });
 
-      db.prepare(
-        `
-        INSERT INTO product_price_history (id, product_id, price, source, created_at)
-        VALUES (?, ?, ?, 'manual', ?)
-        `
-      ).run(uid("hist"), req.params.productId, body.price, timestamp);
-    })();
+    auditLog(admin, "price.update.submitted", "product", req.params.productId, {
+      approvalId: approval.id,
+      proposedPrice: body.price
+    });
 
-    auditLog(admin, "price.updated", "product", req.params.productId, { price: body.price });
-    res.json({ productId: req.params.productId, price: body.price, source: "manual", updatedAt: timestamp });
+    res.status(202).json({
+      pending: true,
+      approvalId: approval.id,
+      message: "Price update submitted for approval. Action will execute after approval."
+    });
   } catch (error) {
     next(error);
   }

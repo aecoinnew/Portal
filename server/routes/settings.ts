@@ -4,6 +4,7 @@ import type { AppSettings, SupportedCurrency } from "../../lib/types/domain.js";
 import { db, nowIso } from "../db/connection.js";
 import { authenticate, requireAdmin, type AuthedRequest } from "../middleware/auth.js";
 import { auditLog } from "../services/auditService.js";
+import { submitForApproval } from "../services/approvalExecutor.js";
 
 export const settingsRouter = Router();
 
@@ -21,22 +22,33 @@ settingsRouter.get("/", (_req, res) => {
   res.json({ settings: getSettings() });
 });
 
+// Phase 3: enforced maker-checker. PATCH creates pending approval, does not mutate.
 settingsRouter.patch("/", requireAdmin, (req, res, next) => {
   try {
     const body = settingsSchema.parse(req.body);
     const admin = (req as unknown as AuthedRequest).user;
-    const timestamp = nowIso();
+    const oldSettings = getSettings();
 
-    db.prepare(
-      `
-      UPDATE app_settings
-      SET base_currency = ?, allow_usd = ?, updated_at = ?
-      WHERE id = 'global'
-      `
-    ).run(body.baseCurrency, body.allowUsd ? 1 : 0, timestamp);
+    const approval = submitForApproval({
+      entityType: "app_settings",
+      entityId: "global",
+      action: "settings.updated",
+      requestedBy: admin,
+      beforePayload: oldSettings,
+      afterPayload: body,
+      reason: `Settings change: baseCurrency=${body.baseCurrency}, allowUsd=${body.allowUsd}`
+    });
 
-    auditLog(admin, "settings.updated", "app_settings", "global", body);
-    res.json({ settings: getSettings() });
+    auditLog(admin, "settings.update.submitted", "app_settings", "global", {
+      approvalId: approval.id,
+      proposed: body
+    });
+
+    res.status(202).json({
+      pending: true,
+      approvalId: approval.id,
+      message: "Settings update submitted for approval."
+    });
   } catch (error) {
     next(error);
   }
