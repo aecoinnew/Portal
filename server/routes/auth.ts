@@ -56,6 +56,7 @@ authRouter.post("/login", loginLimiter, async (req, res, next) => {
       status: row.status
     };
 
+    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(row.id);
     const signOptions: SignOptions = {
       expiresIn: (process.env.JWT_EXPIRES_IN ?? "8h") as SignOptions["expiresIn"]
     };

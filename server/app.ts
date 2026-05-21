@@ -7,6 +7,7 @@ import "./db/init.js";
 import "./services/approvalHandlers.js"; // Phase 3: register approval action handlers
 import { errorHandler, notFound } from "./middleware/error.js";
 import { adminRouter } from "./routes/admin.js";
+import { masterRouter } from "./routes/master.js";
 import { approvalsRouter } from "./routes/approvals.js";
 import { authRouter } from "./routes/auth.js";
 import { clientsRouter } from "./routes/clients.js";
@@ -64,6 +65,7 @@ export function createApp() {
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
   app.use("/api/auth", authRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/admin/master", masterRouter);
   app.use("/api/approvals", approvalsRouter);
   app.use("/api/clients", clientsRouter);
   app.use("/api/products", productsRouter);
