@@ -280,3 +280,10 @@ if (apTableSql && !apTableSql.sql.includes("'executing'")) {
   `);
   console.log("Migration: approval_requests.status widened to include 'executing'");
 }
+
+// --- Migration: Add last_login_at column ---
+const userColsLast = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
+if (!userColsLast.some((c) => c.name === "last_login_at")) {
+  db.prepare("ALTER TABLE users ADD COLUMN last_login_at TEXT").run();
+  console.log("Migration: added users.last_login_at");
+}

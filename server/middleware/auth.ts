@@ -99,6 +99,14 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   return requireAnyRole(["super_admin", "admin"])(req, res, next);
 }
 
+/**
+ * Hard gate: only super_admin role can pass. Used for governance actions
+ * (Master Admin Dashboard).
+ */
+export function requireSuperAdmin(req: Request, res: Response, next: NextFunction) {
+  return requireRole("super_admin")(req, res, next);
+}
+
 export function requireSelfOrAdmin(paramName = "userId") {
   return (req: Request, _res: Response, next: NextFunction) => {
     const user = (req as AuthedRequest).user;
