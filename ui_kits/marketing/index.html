@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emcoin Investment</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: #fff; color: var(--fg-1); -webkit-font-smoothing: antialiased; }
+
+/* Nav */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-subtle); }
+.nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 40px; }
+.nav-logo { display: flex; align-items: center; }
+.nav-logo img { height: 32px; object-fit: contain; }
+.nav-links { display: flex; gap: 28px; flex: 1; }
+.nav-link { font-size: 13px; font-weight: 500; color: var(--fg-2); text-decoration: none; transition: color 120ms; }
+.nav-link:hover { color: var(--fg-1); }
+.nav-cta { display: inline-flex; align-items: center; padding: 0 18px; height: 36px; background: #0B3D91; color: #fff; border-radius: 6px; font-size: 13px; font-weight: 500; text-decoration: none; transition: background 120ms; }
+.nav-cta:hover { background: #0A2A6B; }
+
+/* Hero */
+.hero { padding-top: 60px; min-height: 100vh; background: #0B3D91; display: flex; align-items: center; position: relative; overflow: hidden; }
+.hero-mesh { position: absolute; inset: 0; }
+.hero-inner { max-width: 1200px; margin: 0 auto; padding: 80px 32px; position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #B0944D; margin-bottom: 20px; }
+.hero-title { font-family: var(--font-display); font-size: 54px; font-weight: 600; color: #fff; line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 24px; }
+.hero-body { font-size: 16px; color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 36px; max-width: 440px; }
+.hero-actions { display: flex; gap: 12px; align-items: center; }
+.btn-hero { display: inline-flex; align-items: center; padding: 0 24px; height: 46px; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; }
+.btn-hero-primary { background: #fff; color: #0B3D91; }
+.btn-hero-primary:hover { background: #F6F8FA; }
+.btn-hero-ghost { color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.2); }
+.btn-hero-ghost:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+.stat-block { padding: 24px 28px; }
+.stat-value { font-family: var(--font-display); font-size: 36px; font-weight: 600; color: #fff; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+.stat-accent { border-top: 2px solid #B0944D; }
+
+/* Products */
+.section { max-width: 1200px; margin: 0 auto; padding: 80px 32px; }
+.section-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #B0944D; margin-bottom: 12px; }
+.section-title { font-family: var(--font-display); font-size: 38px; font-weight: 600; letter-spacing: -0.02em; color: var(--fg-1); margin-bottom: 16px; }
+.section-body { font-size: 15px; color: var(--fg-3); line-height: 1.7; max-width: 560px; margin-bottom: 48px; }
+.products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.product-card { border: 1px solid var(--border-subtle); border-radius: 10px; padding: 28px 24px; transition: box-shadow 180ms, border-color 180ms; }
+.product-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-default); }
+.product-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.product-name { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+.product-desc { font-size: 13px; color: var(--fg-3); line-height: 1.6; }
+.product-tag { display: inline-flex; align-items: center; margin-top: 14px; padding: 0 8px; height: 20px; border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* Why Emcoin */
+.why-section { background: var(--bg-app); }
+.why-inner { max-width: 1200px; margin: 0 auto; padding: 80px 32px; }
+.pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; margin-top: 48px; }
+.pillar { }
+.pillar-num { font-family: var(--font-display); font-size: 36px; font-weight: 600; color: #0B3D91; opacity: 0.25; margin-bottom: 12px; }
+.pillar-title { font-size: 15px; font-weight: 600; color: var(--fg-1); margin-bottom: 8px; }
+.pillar-body { font-size: 13px; color: var(--fg-3); line-height: 1.65; }
+
+/* CTA band */
+.cta-band { background: #0B3D91; position: relative; overflow: hidden; }
+.cta-inner { max-width: 1200px; margin: 0 auto; padding: 72px 32px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 48px; }
+.cta-title { font-family: var(--font-display); font-size: 34px; font-weight: 600; color: #fff; letter-spacing: -0.02em; max-width: 500px; line-height: 1.2; }
+.cta-mesh { position: absolute; right: 0; top: 0; bottom: 0; width: 50%; opacity: 0.2; }
+
+/* Footer */
+footer { border-top: 1px solid var(--border-subtle); padding: 40px 32px; }
+.footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.footer-logo img { height: 28px; object-fit: contain; }
+.footer-legal { font-size: 11px; color: var(--fg-4); line-height: 1.6; max-width: 560px; }
+.footer-links { display: flex; gap: 20px; }
+.footer-link { font-size: 12px; color: var(--fg-3); text-decoration: none; }
+.footer-link:hover { color: var(--fg-1); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo"><img src="../../assets/logo-emcoin-official.png" alt="Emcoin Investment"></div>
+    <div class="nav-links">
+      <a class="nav-link" href="#">Products</a>
+      <a class="nav-link" href="#">Why Emcoin</a>
+      <a class="nav-link" href="#">Compliance</a>
+      <a class="nav-link" href="#">Contact</a>
+    </div>
+    <a class="nav-cta" href="../auth/login.html">Client portal</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <svg class="hero-mesh" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#7DB8E8" stroke-width="1" fill="none" opacity="0.35">
+      <path d="M0 100 L200 60 L380 150 L560 80 L740 170 L920 90 L1100 160 L1280 80 L1400 120"/>
+      <path d="M0 280 L220 230 L400 320 L590 250 L780 340 L960 260 L1150 340 L1400 280"/>
+      <path d="M0 460 L240 400 L430 490 L620 410 L810 500 L1000 420 L1200 500 L1400 440"/>
+      <path d="M0 640 L210 590 L400 680 L600 600 L800 680 L1000 600 L1200 670 L1400 620"/>
+      <path d="M0 820 L230 770 L450 860 L650 790 L850 860 L1100 790 L1400 820"/>
+      <path d="M200 60 L220 230 L240 400 L210 590 L230 770"/>
+      <path d="M380 150 L400 320 L430 490 L400 680 L450 860"/>
+      <path d="M560 80 L590 250 L620 410 L600 600 L650 790"/>
+      <path d="M740 170 L780 340 L810 500 L800 680 L850 860"/>
+      <path d="M920 90 L960 260 L1000 420 L1000 600 L1100 790"/>
+    </g>
+    <g fill="#7DB8E8" opacity="0.5">
+      <circle cx="200" cy="60" r="3"/><circle cx="380" cy="150" r="3"/><circle cx="560" cy="80" r="3"/>
+      <circle cx="740" cy="170" r="3"/><circle cx="920" cy="90" r="3"/><circle cx="1100" cy="160" r="3"/>
+      <circle cx="220" cy="230" r="3"/><circle cx="400" cy="320" r="3"/><circle cx="590" cy="250" r="3"/>
+      <circle cx="780" cy="340" r="3"/><circle cx="960" cy="260" r="3"/>
+      <circle cx="240" cy="400" r="3"/><circle cx="430" cy="490" r="3"/><circle cx="620" cy="410" r="3"/>
+      <circle cx="810" cy="500" r="3"/><circle cx="1000" cy="420" r="3"/>
+    </g>
+  </svg>
+
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">Licensed investment management</div>
+      <h1 class="hero-title">Disciplined investing for the long term.</h1>
+      <p class="hero-body">Emcoin provides private clients with licensed access to equities, sukuk, private funds, and digital assets — managed under one portfolio, one statement, one custodian.</p>
+      <div class="hero-actions">
+        <a class="btn-hero btn-hero-primary" href="../auth/login.html">Access your portal</a>
+        <a class="btn-hero btn-hero-ghost" href="#">Learn more</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-block">
+        <div class="stat-value">SAR 48M+</div>
+        <div class="stat-label">Assets under management</div>
+      </div>
+      <div class="stat-block stat-accent">
+        <div class="stat-value">24</div>
+        <div class="stat-label">Active client accounts</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Asset classes</div>
+      </div>
+      <div class="stat-block stat-accent">
+        <div class="stat-value">2018</div>
+        <div class="stat-label">Year established</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Products -->
+<section style="background:#fff;">
+  <div class="section">
+    <div class="section-eyebrow">Investment products</div>
+    <h2 class="section-title">A multi-asset platform built for the GCC.</h2>
+    <p class="section-body">Emcoin offers a curated set of investment instruments, from listed equities to Sharia-compliant sukuk and private mandates.</p>
+    <div class="products-grid">
+      <div class="product-card">
+        <div class="product-icon" style="background:#EEF2FB;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#163C9C" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <div class="product-name">Listed Equities</div>
+        <div class="product-desc">Direct exposure to GCC and international equity markets. Real-time pricing via market data feeds.</div>
+        <span class="product-tag" style="background:#EEF2FB; color:#163C9C;">API pricing</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#FAF7F1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A5727" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        </div>
+        <div class="product-name">Sukuk</div>
+        <div class="product-desc">Sharia-compliant fixed-income instruments. Marked-to-model pricing updated by Emcoin's portfolio team.</div>
+        <span class="product-tag" style="background:#FAF7F1; color:#6A5727; border:1px solid #E2D7B8;">Manual pricing</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#EFF8FF;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#175CD3" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18"/></svg>
+        </div>
+        <div class="product-name">Managed Funds</div>
+        <div class="product-desc">Pooled investment mandates across MENA equities, global markets, and thematic strategies.</div>
+        <span class="product-tag" style="background:#EFF8FF; color:#175CD3;">Manual pricing</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#F5F3FF;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B21B6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="product-name">Digital Assets</div>
+        <div class="product-desc">Regulated access to major cryptocurrencies. Real-time pricing, custodied under licensed infrastructure.</div>
+        <span class="product-tag" style="background:#F5F3FF; color:#5B21B6;">API pricing</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#F6F8FA;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#344256" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="product-name">Private Investments</div>
+        <div class="product-desc">Exclusive access to private equity and pre-IPO mandates. Valuations updated quarterly by the investment team.</div>
+        <span class="product-tag" style="background:#F6F8FA; color:#344256; border:1px solid #E1E5EB;">Manual pricing</span>
+      </div>
+      <div class="product-card" style="background:var(--bg-app); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:40px 24px;">
+        <div style="font-family:var(--font-display); font-size:15px; font-weight:600; color:var(--fg-1); margin-bottom:8px;">Request a custom mandate</div>
+        <div style="font-size:13px; color:var(--fg-3); margin-bottom:16px;">Speak to your relationship manager about a bespoke allocation strategy.</div>
+        <a href="#" style="font-size:13px; color:#0B3D91; font-weight:500; text-decoration:none;">Contact us →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Emcoin -->
+<section class="why-section">
+  <div class="why-inner">
+    <div class="section-eyebrow">Why Emcoin</div>
+    <h2 class="section-title" style="margin-bottom:0;">Built for precision, regulated for trust.</h2>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <div class="pillar-title">Licensed & regulated</div>
+        <div class="pillar-body">Emcoin operates under applicable GCC financial authority licensing. Clients' assets are held in segregated custody accounts.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <div class="pillar-title">Sharia-compliant options</div>
+        <div class="pillar-body">Our sukuk and Islamic fund products are reviewed by an independent Sharia supervisory board and updated regularly.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <div class="pillar-title">Transparent reporting</div>
+        <div class="pillar-body">Quarterly statements, real-time portfolio access, and clearly marked manual vs. market prices — no ambiguity on valuations.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">04</div>
+        <div class="pillar-title">Dedicated relationship team</div>
+        <div class="pillar-body">Every Emcoin client is assigned a relationship manager who reviews all investment requests and provides direct advisory support.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-band">
+  <svg class="cta-mesh" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#7DB8E8" stroke-width="1" fill="none">
+      <path d="M0 50 L100 30 L200 70 L300 40 L400 80 L500 50 L600 70"/>
+      <path d="M0 150 L120 120 L240 160 L360 130 L480 170 L600 145"/>
+      <path d="M0 250 L110 220 L230 260 L350 230 L470 265 L600 240"/>
+      <path d="M100 30 L120 120 L110 220"/><path d="M200 70 L240 160 L230 260"/>
+      <path d="M300 40 L360 130 L350 230"/><path d="M400 80 L480 170 L470 265"/>
+    </g>
+    <g fill="#7DB8E8" opacity="0.6">
+      <circle cx="100" cy="30" r="2.5"/><circle cx="200" cy="70" r="2.5"/>
+      <circle cx="300" cy="40" r="2.5"/><circle cx="400" cy="80" r="2.5"/>
+      <circle cx="120" cy="120" r="2.5"/><circle cx="240" cy="160" r="2.5"/>
+    </g>
+  </svg>
+  <div class="cta-inner">
+    <h2 class="cta-title">Ready to access your portfolio?</h2>
+    <a class="btn-hero btn-hero-primary" href="../auth/login.html">Sign in to your portal</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo"><img src="../../assets/logo-emcoin-official.png" alt="Emcoin Investment"></div>
+    <div class="footer-legal">Emcoin Investment is a licensed investment company. Past performance is not indicative of future results. Investment involves risk; the value of investments may go down as well as up. This website is intended for existing Emcoin clients only and does not constitute a public offering.</div>
+    <div class="footer-links">
+      <a class="footer-link" href="#">Privacy</a>
+      <a class="footer-link" href="#">Terms</a>
+      <a class="footer-link" href="#">Compliance</a>
+      <a class="footer-link" href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

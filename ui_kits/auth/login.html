@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emcoin — Sign in</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg-app); color: var(--fg-1); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; }
+
+/* Left panel — mesh hero */
+.hero { width: 52%; background: #0B3D91; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 48px; }
+.hero-mesh { position: absolute; inset: 0; opacity: 0.3; }
+.hero-content { position: relative; z-index: 1; }
+.hero-logo { margin-bottom: 48px; }
+.hero-logo img { height: 52px; object-fit: contain; }
+.hero-tagline { font-family: var(--font-display); font-size: 38px; font-weight: 600; color: #fff; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 16px; }
+.hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.6; max-width: 340px; }
+.hero-footer { position: relative; z-index: 1; font-size: 11px; color: rgba(255,255,255,0.35); line-height: 1.6; }
+
+/* Right panel — form */
+.form-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px; }
+.form-box { width: 100%; max-width: 380px; }
+.form-title { font-family: var(--font-display); font-size: 24px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 6px; }
+.form-sub { font-size: 13px; color: var(--fg-3); margin-bottom: 32px; }
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--fg-2); margin-bottom: 6px; }
+.field input { width: 100%; height: 40px; border: 1px solid var(--border-default); border-radius: 6px; padding: 0 12px; font-family: var(--font-sans); font-size: 13px; color: var(--fg-1); background: #fff; outline: none; transition: border 120ms, box-shadow 120ms; }
+.field input:focus { border-color: #0B3D91; box-shadow: 0 0 0 3px rgba(11,61,145,0.12); }
+.field-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.field-row label { margin-bottom: 0; }
+.forgot { font-size: 12px; color: #0B3D91; text-decoration: none; }
+.forgot:hover { text-decoration: underline; }
+.btn-submit { width: 100%; height: 42px; background: #0B3D91; color: #fff; border: none; border-radius: 6px; font-family: var(--font-sans); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 120ms; margin-top: 8px; }
+.btn-submit:hover { background: #0A2A6B; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border-subtle); }
+.divider span { font-size: 11px; color: var(--fg-4); }
+.error-box { background: #FEF3F2; border: 1px solid #FEE4E2; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #B42318; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.form-footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--fg-3); line-height: 1.6; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- Left hero -->
+<div class="hero">
+  <svg class="hero-mesh" viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#7DB8E8" stroke-width="1" fill="none">
+      <path d="M0 100 L150 60 L280 140 L420 80 L560 160 L700 90 L800 130"/>
+      <path d="M0 250 L180 200 L310 290 L460 220 L600 300 L800 240"/>
+      <path d="M0 400 L160 360 L300 440 L440 370 L580 450 L720 380 L800 420"/>
+      <path d="M0 550 L200 510 L340 590 L480 520 L620 600 L800 540"/>
+      <path d="M0 700 L170 660 L320 740 L460 670 L610 750 L800 690"/>
+      <path d="M0 850 L190 810 L350 890 L800 840"/>
+      <path d="M150 60 L180 200 L160 360 L200 510 L170 660 L190 810"/>
+      <path d="M280 140 L310 290 L300 440 L340 590 L320 740 L350 890"/>
+      <path d="M420 80 L460 220 L440 370 L480 520 L460 670"/>
+      <path d="M560 160 L600 300 L580 450 L620 600 L610 750"/>
+      <path d="M700 90 L720 380 L800 540"/>
+    </g>
+    <g fill="#7DB8E8">
+      <circle cx="150" cy="60" r="3"/><circle cx="280" cy="140" r="3"/><circle cx="420" cy="80" r="3"/>
+      <circle cx="560" cy="160" r="3"/><circle cx="700" cy="90" r="3"/>
+      <circle cx="180" cy="200" r="3"/><circle cx="310" cy="290" r="3"/><circle cx="460" cy="220" r="3"/>
+      <circle cx="600" cy="300" r="3"/>
+      <circle cx="160" cy="360" r="3"/><circle cx="300" cy="440" r="3"/><circle cx="440" cy="370" r="3"/>
+      <circle cx="580" cy="450" r="3"/>
+    </g>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-logo">
+      <img src="../../assets/logo-emcoin-official.png" alt="Emcoin Investment">
+    </div>
+    <div class="hero-tagline">Your investment<br>portal.</div>
+    <div class="hero-sub">Secure access to your Emcoin portfolio, statements, and investment requests.</div>
+  </div>
+
+  <div class="hero-footer">
+    Emcoin Investment is a licensed investment company.<br>
+    Past performance is not indicative of future results.
+  </div>
+</div>
+
+<!-- Right form -->
+<div class="form-panel">
+  <div class="form-box">
+    <div class="form-title">Sign in</div>
+    <div class="form-sub">Sign in to your Emcoin investment portal.</div>
+
+    <!-- Uncomment to show error state:
+    <div class="error-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Incorrect email or password. Please try again.
+    </div>
+    -->
+
+    <div class="field">
+      <label for="email">Email address</label>
+      <input id="email" type="email" value="faisal.al-harbi@example.com" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <div class="field-row">
+        <label for="password">Password</label>
+        <a href="#" class="forgot">Forgot password?</a>
+      </div>
+      <input id="password" type="password" value="••••••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn-submit">Sign in</button>
+
+    <div class="form-footer">
+      Access is restricted to authorised account holders.<br>
+      If you need assistance, contact your relationship manager.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

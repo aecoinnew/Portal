@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emcoin — Admin Portal</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg-app); color: var(--fg-1); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+.layout { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 248px; flex-shrink: 0; background: #0B3D91; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 10; }
+.sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo img { height: 34px; object-fit: contain; filter: brightness(0) invert(1); }
+.sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+.nav-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.35); padding: 8px 10px 4px; }
+.nav-item { display: flex; align-items: center; gap: 9px; padding: 0 10px; height: 34px; border-radius: 6px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.65); cursor: pointer; transition: background 120ms; text-decoration: none; }
+.nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.15); color: #fff; }
+.nav-badge { margin-left: auto; background: #B0944D; color: #fff; font-size: 10px; font-weight: 700; padding: 0 6px; height: 16px; border-radius: 8px; display: flex; align-items: center; }
+.sidebar-footer { padding: 12px 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+.user-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.user-row:hover { background: rgba(255,255,255,0.08); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.15); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.user-name { font-size: 12px; font-weight: 500; color: #fff; }
+.user-role { font-size: 10px; color: rgba(255,255,255,0.45); }
+
+/* Main */
+.main { margin-left: 248px; flex: 1; }
+.topbar { height: 56px; background: #fff; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; padding: 0 24px; gap: 12px; position: sticky; top: 0; z-index: 5; }
+.topbar-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; flex: 1; }
+.topbar-date { font-size: 12px; color: var(--fg-3); }
+.btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; height: 32px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; }
+.btn-primary { background: #0B3D91; color: #fff; }
+.btn-primary:hover { background: #0A2A6B; }
+.content { padding: 24px; max-width: 1120px; }
+
+/* KPI */
+.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+.kpi-card { background: #fff; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px 18px; }
+.kpi-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 8px; }
+.kpi-value { font-family: var(--font-display); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.kpi-sub { font-size: 11px; color: var(--fg-3); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.kpi-warn { color: #B54708; }
+
+/* Card */
+.card { background: #fff; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.card-header { padding: 14px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 13px; font-weight: 600; }
+.card-actions { display: flex; gap: 8px; align-items: center; }
+.filter-pill { padding: 0 10px; height: 26px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--border-subtle); background: #fff; color: var(--fg-2); }
+.filter-pill.active { background: #EEF2FB; color: #0B3D91; border-color: #ADBDE7; }
+
+/* Table */
+.table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.table th { padding: 9px 14px; font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); background: var(--bg-app); text-align: left; border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+.table th.r { text-align: right; }
+.table td { padding: 11px 14px; color: var(--fg-2); border-bottom: 1px solid #F3F5F7; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table td.r { text-align: right; }
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: var(--bg-surface-2); }
+.fw { font-weight: 500; color: var(--fg-1); }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 0 7px; height: 20px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+.badge::before { content:''; width:4px; height:4px; border-radius:50%; background:currentColor; }
+.b-pending { background:#FFFAEB; color:#B54708; }
+.b-approved { background:#EFF8FF; color:#175CD3; }
+.b-executed { background:#ECFDF3; color:#027A48; }
+.b-rejected { background:#FEF3F2; color:#B42318; }
+.b-active { background:#ECFDF3; color:#027A48; }
+.b-suspended { background:#EEF1F4; color:#344256; }
+
+/* Tags */
+.tag { display: inline-flex; align-items: center; padding: 0 6px; height: 18px; border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.t-equity { background:#EEF2FB; color:#163C9C; }
+.t-sukuk { background:#FAF7F1; color:#6A5727; border:1px solid #E2D7B8; }
+.t-crypto { background:#F5F3FF; color:#5B21B6; }
+.t-fund { background:#EFF8FF; color:#175CD3; }
+.t-private { background:#F6F8FA; color:#344256; border:1px solid #E1E5EB; }
+.t-api { background:#EFF8FF; color:#175CD3; }
+.t-manual { background:#FAF7F1; color:#B0944D; border:1px solid #E2D7B8; }
+
+.action-link { color: #0B3D91; font-size: 11px; text-decoration: none; cursor: pointer; }
+.action-link:hover { text-decoration: underline; }
+.action-sep { color: var(--fg-4); font-size: 11px; }
+
+/* Two col */
+.two-col { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+.activity-row { display: flex; gap: 12px; padding: 10px 20px; border-bottom: 1px solid #F3F5F7; align-items: flex-start; }
+.activity-row:last-child { border-bottom: none; }
+.activity-dot { width: 6px; height: 6px; border-radius: 50%; background: #0B3D91; margin-top: 4px; flex-shrink: 0; }
+.activity-text { font-size: 12px; color: var(--fg-2); line-height: 1.5; }
+.activity-time { font-size: 10px; color: var(--fg-3); margin-top: 1px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar — dark navy for admin differentiation -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="../../assets/logo-emcoin-official.png" alt="Emcoin Investment">
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a class="nav-item active" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <div class="nav-section-label" style="margin-top:8px;">Management</div>
+      <a class="nav-item" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients
+      </a>
+      <a class="nav-item" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Products
+      </a>
+      <a class="nav-item" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        Portfolios
+      </a>
+      <a class="nav-item" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pricing
+      </a>
+      <div class="nav-section-label" style="margin-top:8px;">Operations</div>
+      <a class="nav-item" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Requests
+        <span class="nav-badge">5</span>
+      </a>
+      <a class="nav-item" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Statements
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar">AM</div>
+        <div>
+          <div class="user-name">Admin — Mohammed</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">Admin dashboard</div>
+      <div class="topbar-date">30 Apr 2026 · 14:00 GST</div>
+      <button class="btn-sm btn-primary">+ New client</button>
+    </div>
+
+    <div class="content">
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total AUM</div>
+          <div class="kpi-value">48.3M</div>
+          <div class="kpi-sub">SAR · across 24 clients</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Active clients</div>
+          <div class="kpi-value">24</div>
+          <div class="kpi-sub">2 suspended</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pending requests</div>
+          <div class="kpi-value kpi-warn">5</div>
+          <div class="kpi-sub">Awaiting review</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Active products</div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-sub">3 manual price</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Stale prices</div>
+          <div class="kpi-value kpi-warn">2</div>
+          <div class="kpi-sub">&gt;24h since update</div>
+        </div>
+      </div>
+
+      <!-- Requests + Activity -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pending requests</div>
+            <div class="card-actions">
+              <button class="filter-pill active">All (5)</button>
+              <button class="filter-pill">Buy (2)</button>
+              <button class="filter-pill">Sell (1)</button>
+              <button class="filter-pill">Subscribe (1)</button>
+              <button class="filter-pill">Withdraw (1)</button>
+            </div>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Ref</th>
+                <th>Client</th>
+                <th>Type</th>
+                <th>Product</th>
+                <th class="r">Amount (SAR)</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family:var(--font-mono); font-size:10px; color:var(--fg-3);">REQ-1048</td>
+                <td class="fw">Faisal Al-Harbi</td>
+                <td><span style="background:#EEF2FB;color:#163C9C;" class="tag">Buy</span></td>
+                <td>Saudi Aramco</td>
+                <td class="r">50,000.00</td>
+                <td>25 Apr 2026</td>
+                <td><span class="badge b-pending">Pending</span></td>
+                <td><a class="action-link">Approve</a> <span class="action-sep">·</span> <a class="action-link" style="color:#D92D20;">Reject</a></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono); font-size:10px; color:var(--fg-3);">REQ-1047</td>
+                <td class="fw">Nora Al-Rashidi</td>
+                <td><span style="background:#ECFDF3;color:#027A48;" class="tag">Subscribe</span></td>
+                <td>MENA Growth Fund</td>
+                <td class="r">200,000.00</td>
+                <td>24 Apr 2026</td>
+                <td><span class="badge b-pending">Pending</span></td>
+                <td><a class="action-link">Approve</a> <span class="action-sep">·</span> <a class="action-link" style="color:#D92D20;">Reject</a></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono); font-size:10px; color:var(--fg-3);">REQ-1046</td>
+                <td class="fw">Khalid Mansouri</td>
+                <td><span style="background:#FEF3F2;color:#B42318;" class="tag">Sell</span></td>
+                <td>Bitcoin</td>
+                <td class="r">30,000.00</td>
+                <td>22 Apr 2026</td>
+                <td><span class="badge b-pending">Pending</span></td>
+                <td><a class="action-link">Approve</a> <span class="action-sep">·</span> <a class="action-link" style="color:#D92D20;">Reject</a></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono); font-size:10px; color:var(--fg-3);">REQ-1045</td>
+                <td class="fw">Sara Al-Otaibi</td>
+                <td><span style="background:#EEF2FB;color:#163C9C;" class="tag">Buy</span></td>
+                <td>Emcoin Sukuk I</td>
+                <td class="r">75,000.00</td>
+                <td>20 Apr 2026</td>
+                <td><span class="badge b-pending">Pending</span></td>
+                <td><a class="action-link">Approve</a> <span class="action-sep">·</span> <a class="action-link" style="color:#D92D20;">Reject</a></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font-mono); font-size:10px; color:var(--fg-3);">REQ-1044</td>
+                <td class="fw">Ahmed Al-Zahrani</td>
+                <td><span style="background:#FFFAEB;color:#B54708;" class="tag">Withdraw</span></td>
+                <td>—</td>
+                <td class="r">20,000.00</td>
+                <td>18 Apr 2026</td>
+                <td><span class="badge b-pending">Pending</span></td>
+                <td><a class="action-link">Approve</a> <span class="action-sep">·</span> <a class="action-link" style="color:#D92D20;">Reject</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent activity</div></div>
+          <div>
+            <div class="activity-row">
+              <div class="activity-dot"></div>
+              <div><div class="activity-text">Request REQ-1043 executed — <strong>Faisal Al-Harbi</strong> MENA Growth Fund subscription.</div><div class="activity-time">30 Apr 2026, 11:22</div></div>
+            </div>
+            <div class="activity-row">
+              <div class="activity-dot" style="background:#B0944D;"></div>
+              <div><div class="activity-text">Manual price updated — <strong>Emcoin Sukuk I</strong> → 1,003.50 SAR.</div><div class="activity-time">30 Apr 2026, 09:15</div></div>
+            </div>
+            <div class="activity-row">
+              <div class="activity-dot"></div>
+              <div><div class="activity-text">Statement uploaded — <strong>Nora Al-Rashidi</strong> Q1 2026.</div><div class="activity-time">29 Apr 2026, 16:40</div></div>
+            </div>
+            <div class="activity-row">
+              <div class="activity-dot" style="background:#D92D20;"></div>
+              <div><div class="activity-text">Request REQ-1042 rejected — <strong>Khalid Mansouri</strong>. Reason: insufficient balance.</div><div class="activity-time">29 Apr 2026, 14:05</div></div>
+            </div>
+            <div class="activity-row">
+              <div class="activity-dot"></div>
+              <div><div class="activity-text">New client created — <strong>Sara Al-Otaibi</strong>. Account active.</div><div class="activity-time">28 Apr 2026, 10:00</div></div>
+            </div>
+            <div class="activity-row">
+              <div class="activity-dot" style="background:#B0944D;"></div>
+              <div><div class="activity-text">Manual price updated — <strong>Private Equity I</strong> → 196.00 SAR.</div><div class="activity-time">28 Apr 2026, 08:30</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products pricing overview -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Product pricing</div>
+          <div class="card-actions">
+            <button class="btn-sm btn-primary">Update manual price</button>
+          </div>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Type</th>
+              <th>Pricing</th>
+              <th class="r">Current price</th>
+              <th>Currency</th>
+              <th>Last updated</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw">Saudi Aramco</td>
+              <td><span class="tag t-equity">Equity</span></td>
+              <td><span class="tag t-api">API</span></td>
+              <td class="r">32.40</td>
+              <td>SAR</td>
+              <td>Live</td>
+              <td><span class="badge b-active">Active</span></td>
+              <td><a class="action-link">Edit</a></td>
+            </tr>
+            <tr>
+              <td class="fw">Emcoin Sukuk I</td>
+              <td><span class="tag t-sukuk">Sukuk</span></td>
+              <td><span class="tag t-manual">Manual</span></td>
+              <td class="r">1,003.50</td>
+              <td>SAR</td>
+              <td style="color:#B54708;">4h ago</td>
+              <td><span class="badge b-active">Active</span></td>
+              <td><a class="action-link">Update price</a></td>
+            </tr>
+            <tr>
+              <td class="fw">Bitcoin</td>
+              <td><span class="tag t-crypto">Crypto</span></td>
+              <td><span class="tag t-api">API</span></td>
+              <td class="r">246,840.00</td>
+              <td>SAR</td>
+              <td>Live</td>
+              <td><span class="badge b-active">Active</span></td>
+              <td><a class="action-link">Edit</a></td>
+            </tr>
+            <tr>
+              <td class="fw">MENA Growth Fund</td>
+              <td><span class="tag t-fund">Fund</span></td>
+              <td><span class="tag t-manual">Manual</span></td>
+              <td class="r">698.50</td>
+              <td>SAR</td>
+              <td style="color:#D92D20; font-weight:500;">26h ago ⚠</td>
+              <td><span class="badge b-active">Active</span></td>
+              <td><a class="action-link">Update price</a></td>
+            </tr>
+            <tr>
+              <td class="fw">Private Equity I</td>
+              <td><span class="tag t-private">Private</span></td>
+              <td><span class="tag t-manual">Manual</span></td>
+              <td class="r">196.00</td>
+              <td>SAR</td>
+              <td style="color:#D92D20; font-weight:500;">28h ago ⚠</td>
+              <td><span class="badge b-active">Active</span></td>
+              <td><a class="action-link">Update price</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>
