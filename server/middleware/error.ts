@@ -18,7 +18,8 @@ export function notFound(_req: Request, _res: Response, next: NextFunction) {
   next(new ApiError(404, "Route not found", "not_found"));
 }
 
-export function errorHandler(error: unknown, _req: Request, res: Response, _next: NextFunction) {
+export function errorHandler(error: unknown, req: Request, res: Response, _next: NextFunction) {
+  const requestId = (req as unknown as { requestId?: string }).requestId ?? null;
   if (error instanceof ZodError) {
     return res.status(400).json({
       error: {
@@ -39,7 +40,21 @@ export function errorHandler(error: unknown, _req: Request, res: Response, _next
     });
   }
 
-  console.error(error);
+  // Structured log for unhandled errors. Single-line JSON for log shippers.
+  // Do NOT include req body - it may contain credentials.
+  const err = error as { message?: string; stack?: string; name?: string };
+  const logEntry = {
+    level: "error",
+    timestamp: new Date().toISOString(),
+    requestId,
+    method: req.method,
+    path: req.originalUrl,
+    code: "internal_error",
+    name: err?.name ?? "Error",
+    message: err?.message ?? "unknown",
+    stack: err?.stack ?? null
+  };
+  console.error(JSON.stringify(logEntry));
   return res.status(500).json({
     error: {
       message: "Internal server error",

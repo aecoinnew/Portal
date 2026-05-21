@@ -8,9 +8,11 @@ dotenv.config();
 
 const databasePath = path.resolve(process.cwd(), process.env.DATABASE_PATH ?? "server/data/emcoin.sqlite");
 const statementsDir = path.resolve(process.cwd(), process.env.STATEMENTS_DIR ?? "server/uploads/statements");
+const statementsQuarantineDir = path.join(statementsDir, ".quarantine");
 
 fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 fs.mkdirSync(statementsDir, { recursive: true });
+fs.mkdirSync(statementsQuarantineDir, { recursive: true });
 
 export const db = new Database(databasePath);
 
@@ -33,4 +35,4 @@ export function resolveStatementPath(filePath: string) {
   return resolved;
 }
 
-export { databasePath, statementsDir };
+export { databasePath, statementsDir, statementsQuarantineDir };

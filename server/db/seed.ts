@@ -20,7 +20,7 @@ const users = [
     name: "Mohammed Al-Salem",
     email: "admin@emcoin.local",
     passwordHash: hash,
-    role: "admin",
+    role: "super_admin",
     status: "active",
     phone: "+966500000001",
     relationshipManager: null,
@@ -173,5 +173,5 @@ insertStatement.run({
 });
 
 console.log("Seed complete.");
-console.log(`Admin: admin@emcoin.local / ${password}`);
+console.log(`Super Admin: admin@emcoin.local / ${password}`);
 console.log(`Client: faisal.al-harbi@example.com / ${password}`);

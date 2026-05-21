@@ -5,9 +5,20 @@ import { db } from "../db/connection.js";
 import { ApiError } from "./error.js";
 import type { AuthUser, UserRole } from "../../lib/types/domain.js";
 
+const ALL_ROLES = [
+  "super_admin",
+  "admin",
+  "operations",
+  "relationship_manager",
+  "compliance",
+  "finance",
+  "auditor",
+  "client"
+] as const;
+
 const jwtPayloadSchema = z.object({
   sub: z.string(),
-  role: z.enum(["client", "admin"])
+  role: z.enum(ALL_ROLES)
 });
 
 type UserRow = {
@@ -58,6 +69,12 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
   }
 }
 
+/**
+ * Strict equality role guard. Use only when EXACTLY one role is allowed.
+ * For multi-role guards prefer requireAnyRole(). For permission-style guards
+ * prefer requirePermission() + a can* function. There is no role hierarchy:
+ * "admin" does NOT imply "operations" etc. - each role is an independent set.
+ */
 export function requireRole(role: UserRole) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const user = (req as AuthedRequest).user;
@@ -68,28 +85,100 @@ export function requireRole(role: UserRole) {
   };
 }
 
+export function requireAnyRole(roles: UserRole[]) {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    const user = (req as AuthedRequest).user;
+    if (!user || !roles.includes(user.role)) {
+      return next(new ApiError(403, "Insufficient permissions", "forbidden"));
+    }
+    return next();
+  };
+}
+
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  return requireRole("admin")(req, res, next);
+  return requireAnyRole(["super_admin", "admin"])(req, res, next);
 }
 
 export function requireSelfOrAdmin(paramName = "userId") {
   return (req: Request, _res: Response, next: NextFunction) => {
     const user = (req as AuthedRequest).user;
     const targetUserId = req.params[paramName] ?? req.query[paramName];
-    if (user.role !== "admin" && user.id !== targetUserId) {
+    if (!isAdminRole(user.role) && user.id !== targetUserId) {
       return next(new ApiError(403, "Cannot access another client account", "ownership_required"));
     }
     return next();
   };
 }
 
+/**
+ * Returns true only for roles that are allowed to access another user's data
+ * (used by requireSelfOrAdmin). This is an explicit allowlist - do NOT change
+ * to "role !== 'client'" because that would grant cross-account access to
+ * auditor / compliance / finance roles which are read-only-by-context.
+ */
+function isAdminRole(role: UserRole): boolean {
+  return ["super_admin", "admin", "operations", "relationship_manager"].includes(role);
+}
+
+export function canManageClients(role: UserRole): boolean {
+  return ["super_admin", "admin", "operations", "relationship_manager"].includes(role);
+}
+
+export function canManageProducts(role: UserRole): boolean {
+  return ["super_admin", "admin", "operations", "finance"].includes(role);
+}
+
+export function canManagePortfolio(role: UserRole): boolean {
+  return ["super_admin", "admin", "operations", "finance", "relationship_manager"].includes(role);
+}
+
+export function canManagePricing(role: UserRole): boolean {
+  return ["super_admin", "admin", "finance", "operations"].includes(role);
+}
+
+export function canManageStatements(role: UserRole): boolean {
+  return ["super_admin", "admin", "operations", "finance"].includes(role);
+}
+
+export function canApproveRequests(role: UserRole): boolean {
+  return ["super_admin", "admin", "operations", "compliance", "finance"].includes(role);
+}
+
+export function canViewAudit(role: UserRole): boolean {
+  return ["super_admin", "admin", "compliance", "auditor"].includes(role);
+}
+
+export function canViewAdminDashboard(role: UserRole): boolean {
+  return ["super_admin", "admin", "operations", "compliance", "finance", "auditor"].includes(role);
+}
+
+export function requirePermission(
+  permissionFn: (role: UserRole) => boolean,
+  permissionName: string
+) {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    const user = (req as AuthedRequest).user;
+    if (!user || !permissionFn(user.role)) {
+      return next(
+        new ApiError(403, `Permission denied: ${permissionName}`, "forbidden")
+      );
+    }
+    return next();
+  };
+}
+
+const DEFAULT_JWT_SECRET = "replace-with-a-long-random-production-secret";
+
 export function jwtSecret() {
   const secret = process.env.JWT_SECRET;
-  if (!secret || secret === "replace-with-a-long-random-production-secret") {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("JWT_SECRET must be set to a strong production secret");
-    }
-    return "local-development-only-change-me";
+
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is required. Set it to a long random string.");
   }
+
+  if (secret === DEFAULT_JWT_SECRET || secret.length < 16) {
+    throw new Error("JWT_SECRET must be a strong secret (min 16 characters). Do not use the default placeholder value.");
+  }
+
   return secret;
 }

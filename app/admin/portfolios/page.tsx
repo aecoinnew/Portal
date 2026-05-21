@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Save, Trash2, X } from "lucide-react";
 import { ProductTypeTag } from "@/components/ui/badges";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
+import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest } from "@/lib/api/client";
 import type { AdminPosition, ClientsResponse, PositionsResponse, ProductsResponse } from "@/lib/types/api";
 import type { ClientUser, Product } from "@/lib/types/domain";
@@ -21,6 +22,7 @@ export default function AdminPortfoliosPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   async function load() {
     const [clientsData, productsData, positionsData] = await Promise.all([
@@ -46,7 +48,7 @@ export default function AdminPortfoliosPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await apiRequest(editingPositionId ? `/portfolio/positions/${editingPositionId}` : "/portfolio/positions", {
+      const resp = await apiRequest<{ pending?: boolean; approvalId?: string }>(editingPositionId ? `/portfolio/positions/${editingPositionId}` : "/portfolio/positions", {
         method: editingPositionId ? "PATCH" : "POST",
         body: JSON.stringify({
           userId,
@@ -55,6 +57,11 @@ export default function AdminPortfoliosPage() {
           avgPrice: Number(avgPrice)
         })
       });
+      if (resp?.pending && resp.approvalId) {
+        setPendingApprovalId(resp.approvalId);
+      } else {
+        setPendingApprovalId(null);
+      }
       resetForm();
       await load();
     } catch (saveError) {
@@ -65,8 +72,14 @@ export default function AdminPortfoliosPage() {
   }
 
   async function removePosition(position: AdminPosition) {
-    await apiRequest(`/portfolio/positions/${position.id}`, { method: "DELETE" });
-    setPositions((current) => current.filter((item) => item.id !== position.id));
+    const resp = await apiRequest<{ pending?: boolean; approvalId?: string }>(`/portfolio/positions/${position.id}`, { method: "DELETE" });
+    if (resp?.pending && resp.approvalId) {
+      // Position remains in list until approval is executed. Do not remove optimistically.
+      setPendingApprovalId(resp.approvalId);
+    } else {
+      setPendingApprovalId(null);
+      setPositions((current) => current.filter((item) => item.id !== position.id));
+    }
   }
 
   function editPosition(position: AdminPosition) {
@@ -92,6 +105,7 @@ export default function AdminPortfoliosPage() {
         <p className="mt-1 text-[13px] text-slate-500">Client product positions and cost basis.</p>
       </div>
 
+      {pendingApprovalId ? <PendingApprovalBanner approvalId={pendingApprovalId} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <section className="grid gap-4 xl:grid-cols-[360px_1fr]">

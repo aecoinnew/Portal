@@ -104,6 +104,107 @@ CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at DESC);
 
 console.log("SQLite schema initialized.");
 
+// --- Migration: Phase 2 - Add approval_requests table ---
+const approvalTableExists = db.prepare(
+  "SELECT name FROM sqlite_master WHERE type='table' AND name='approval_requests'"
+).get() as { name: string } | undefined;
+
+if (!approvalTableExists) {
+  console.log("Phase 2: Creating approval_requests table...");
+
+  db.exec(`
+    CREATE TABLE approval_requests (
+      id TEXT PRIMARY KEY,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      requested_by_user_id TEXT NOT NULL REFERENCES users(id),
+      assigned_role TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled', 'executed')),
+      before_value TEXT,
+      after_value TEXT,
+      reason TEXT,
+      decision_by_user_id TEXT REFERENCES users(id),
+      decision_reason TEXT,
+      created_at TEXT NOT NULL,
+      decided_at TEXT,
+      executed_at TEXT
+    );
+
+    CREATE INDEX idx_approval_requested_by ON approval_requests(requested_by_user_id);
+    CREATE INDEX idx_approval_status ON approval_requests(status);
+    CREATE INDEX idx_approval_entity ON approval_requests(entity_type, entity_id);
+    CREATE INDEX idx_approval_created ON approval_requests(created_at DESC);
+  `);
+
+  console.log("Phase 2: approval_requests table created.");
+}
+
+// --- Migration: Expand role CHECK constraint for institutional RBAC ---
+const ALLOWED_ROLES = [
+  "super_admin",
+  "admin",
+  "operations",
+  "relationship_manager",
+  "compliance",
+  "finance",
+  "auditor",
+  "client"
+];
+
+const roleCheckValues = ALLOWED_ROLES.map((r) => `'${r}'`).join(", ");
+const newRoleCheck = `role IN (${roleCheckValues})`;
+
+const tableInfo = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string; type: string; notnull: number; dflt_value: string | null; pk: number }>;
+// Check if the role constraint already includes expanded roles.
+// We do this by checking if the table SQL in sqlite_master contains 'super_admin'.
+const userTableSql = db.prepare(
+  "SELECT sql FROM sqlite_master WHERE type='table' AND name='users'"
+).get() as { sql: string } | undefined;
+const hasExpandedRoles = userTableSql?.sql?.includes("super_admin") ?? false;
+
+if (!hasExpandedRoles) {
+  console.log("Migrating users table: expanding role constraint...");
+
+  db.exec(`
+    PRAGMA foreign_keys = OFF;
+
+    BEGIN TRANSACTION;
+
+    CREATE TABLE users_new (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL CHECK (${newRoleCheck}),
+      status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended')),
+      phone TEXT,
+      relationship_manager TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      must_change_password INTEGER NOT NULL DEFAULT 0 CHECK (must_change_password IN (0, 1))
+    );
+
+    INSERT INTO users_new (id, name, email, password_hash, role, status, phone, relationship_manager, created_at, updated_at, must_change_password)
+    SELECT id, name, email, password_hash, role, status, phone, relationship_manager, created_at, updated_at,
+           COALESCE(must_change_password, 0)
+    FROM users;
+
+    DROP TABLE users;
+
+    ALTER TABLE users_new RENAME TO users;
+
+    CREATE INDEX IF NOT EXISTS idx_users_role_status ON users(role, status);
+
+    COMMIT;
+
+    PRAGMA foreign_keys = ON;
+  `);
+
+  console.log("Migration complete: role constraint expanded to institutional roles.");
+}
+
+// --- Existing migrations ---
 const requestColumns = db.prepare("PRAGMA table_info(investment_requests)").all() as Array<{ name: string }>;
 if (!requestColumns.some((column) => column.name === "currency")) {
   db.prepare("ALTER TABLE investment_requests ADD COLUMN currency TEXT NOT NULL DEFAULT 'AED' CHECK (currency IN ('AED', 'USD'))").run();
@@ -117,3 +218,65 @@ db.prepare(
   VALUES ('global', 'AED', 1, datetime('now'))
   `
 ).run();
+
+// --- Migration: Add must_change_password column ---
+const userCols = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
+if (!userCols.some((c) => c.name === "must_change_password")) {
+  db.prepare(
+    "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0 CHECK (must_change_password IN (0,1))"
+  ).run();
+  console.log("Migration: added users.must_change_password");
+}
+
+// --- Migration: widen approval_requests.status to include 'executing' ---
+const apTableSql = db.prepare(
+  "SELECT sql FROM sqlite_master WHERE type='table' AND name='approval_requests'"
+).get() as { sql: string } | undefined;
+
+if (apTableSql && !apTableSql.sql.includes("'executing'")) {
+  console.log("Migration: adding 'executing' to approval_requests.status CHECK constraint...");
+  db.exec(`
+    PRAGMA foreign_keys = OFF;
+    BEGIN TRANSACTION;
+
+    CREATE TABLE approval_requests_new (
+      id TEXT PRIMARY KEY,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      requested_by_user_id TEXT NOT NULL REFERENCES users(id),
+      assigned_role TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled', 'executing', 'executed')),
+      before_value TEXT,
+      after_value TEXT,
+      reason TEXT,
+      decision_by_user_id TEXT REFERENCES users(id),
+      decision_reason TEXT,
+      created_at TEXT NOT NULL,
+      decided_at TEXT,
+      executed_at TEXT
+    );
+
+    INSERT INTO approval_requests_new
+      (id, entity_type, entity_id, action, requested_by_user_id, assigned_role,
+       status, before_value, after_value, reason, decision_by_user_id, decision_reason,
+       created_at, decided_at, executed_at)
+    SELECT
+      id, entity_type, entity_id, action, requested_by_user_id, assigned_role,
+      status, before_value, after_value, reason, decision_by_user_id, decision_reason,
+      created_at, decided_at, executed_at
+    FROM approval_requests;
+
+    DROP TABLE approval_requests;
+    ALTER TABLE approval_requests_new RENAME TO approval_requests;
+
+    CREATE INDEX idx_approval_requested_by ON approval_requests(requested_by_user_id);
+    CREATE INDEX idx_approval_status ON approval_requests(status);
+    CREATE INDEX idx_approval_entity ON approval_requests(entity_type, entity_id);
+    CREATE INDEX idx_approval_created ON approval_requests(created_at DESC);
+
+    COMMIT;
+    PRAGMA foreign_keys = ON;
+  `);
+  console.log("Migration: approval_requests.status widened to include 'executing'");
+}

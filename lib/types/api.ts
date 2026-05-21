@@ -1,6 +1,7 @@
 import type {
   AdminSummary,
   AppSettings,
+  ApprovalRequest,
   ClientUser,
   InvestmentRequest,
   PortfolioSummary,
@@ -60,3 +61,5 @@ export type PricingResponse = { pricing: PricingRow[] };
 export type AdminSummaryResponse = { summary: AdminSummary };
 export type PositionsResponse = { positions: AdminPosition[] };
 export type SettingsResponse = { settings: AppSettings };
+export type ApprovalsResponse = { approvals: ApprovalRequest[] };
+export type ApprovalResponse = { approval: ApprovalRequest };

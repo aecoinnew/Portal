@@ -4,6 +4,7 @@ import { db, nowIso, uid } from "../db/connection.js";
 import { authenticate, requireAdmin, type AuthedRequest } from "../middleware/auth.js";
 import { ApiError } from "../middleware/error.js";
 import { auditLog } from "../services/auditService.js";
+import { submitForApproval } from "../services/approvalExecutor.js";
 import { mapRequest } from "../services/mappers.js";
 import { isCurrencyAllowed } from "./settings.js";
 
@@ -119,33 +120,28 @@ requestsRouter.patch("/:id/status", requireAdmin, (req, res, next) => {
       throw new ApiError(400, "Rejection reason is required", "rejection_reason_required");
     }
 
-    const timestamp = nowIso();
-    db.prepare(
-      `
-      UPDATE investment_requests
-      SET status = ?, rejection_reason = ?, updated_at = ?
-      WHERE id = ?
-      `
-    ).run(body.status, body.status === "rejected" ? body.rejectionReason?.trim() : null, timestamp, req.params.id);
+    // Phase 3: enforced maker-checker. Submit for approval, do not mutate.
+    const approval = submitForApproval({
+      entityType: "investment_request",
+      entityId: req.params.id,
+      action: "request.status.updated",
+      requestedBy: admin,
+      beforePayload: { status: existing.status },
+      afterPayload: { status: body.status, rejectionReason: body.rejectionReason ?? null },
+      reason: `Request status change from ${existing.status} to ${body.status}`
+    });
 
-    auditLog(admin, "request.status.updated", "investment_request", req.params.id, {
+    auditLog(admin, "request.status.update.submitted", "investment_request", req.params.id, {
+      approvalId: approval.id,
       from: existing.status,
       to: body.status
     });
 
-    const row = db
-      .prepare(
-        `
-        SELECT ir.*, u.name AS client_name, p.name AS product_name
-        FROM investment_requests ir
-        JOIN users u ON u.id = ir.user_id
-        LEFT JOIN products p ON p.id = ir.product_id
-        WHERE ir.id = ?
-        `
-      )
-      .get(req.params.id) as Record<string, unknown>;
-
-    res.json({ request: mapRequest(row) });
+    res.status(202).json({
+      pending: true,
+      approvalId: approval.id,
+      message: "Status change submitted for approval."
+    });
   } catch (error) {
     next(error);
   }

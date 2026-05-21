@@ -3,10 +3,17 @@ import multer from "multer";
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import { db, nowIso, resolveStatementPath, statementsDir, uid } from "../db/connection.js";
+import {
+  db,
+  resolveStatementPath,
+  statementsDir,
+  statementsQuarantineDir,
+  uid
+} from "../db/connection.js";
 import { authenticate, requireAdmin, type AuthedRequest } from "../middleware/auth.js";
 import { ApiError } from "../middleware/error.js";
 import { auditLog } from "../services/auditService.js";
+import { submitForApproval } from "../services/approvalExecutor.js";
 import { mapStatement } from "../services/mappers.js";
 
 export const statementsRouter = Router();
@@ -16,8 +23,9 @@ const uploadBodySchema = z.object({
   period: z.string().min(2).max(80)
 });
 
+// Phase 3: uploads land in quarantine. They are NOT visible to clients until executed.
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, statementsDir),
+  destination: (_req, _file, cb) => cb(null, statementsQuarantineDir),
   filename: (_req, file, cb) => {
     const clean = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "-");
     cb(null, `${uid("stmtfile")}-${clean}`);
@@ -67,6 +75,8 @@ statementsRouter.get("/", (req, res) => {
   res.json({ statements: rows.map(mapStatement) });
 });
 
+// Phase 3: upload to quarantine, submit for approval. Statement record is NOT
+// inserted into the statements table until execution.
 statementsRouter.post("/", requireAdmin, upload.single("file"), (req, res, next) => {
   try {
     const body = uploadBodySchema.parse(req.body);
@@ -76,30 +86,49 @@ statementsRouter.post("/", requireAdmin, upload.single("file"), (req, res, next)
     if (!file) throw new ApiError(400, "Statement PDF is required", "file_required");
     assertClient(body.userId);
 
-    const id = uid("stmt");
-    const timestamp = nowIso();
+    // Sanity-check that the file is actually inside the quarantine dir.
+    const quarantinePath = path.resolve(file.path);
+    if (!quarantinePath.startsWith(statementsQuarantineDir + path.sep)) {
+      // multer should have placed it there; bail safely
+      try { fs.unlinkSync(file.path); } catch { /* ignore */ }
+      throw new ApiError(500, "Upload did not land in quarantine", "quarantine_violation");
+    }
 
-    db.prepare(
-      `
-      INSERT INTO statements (id, user_id, period, file_name, file_path, mime_type, file_size, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `
-    ).run(id, body.userId, body.period, file.originalname, file.path, file.mimetype, file.size, timestamp);
-
-    auditLog(admin, "statement.uploaded", "statement", id, {
-      userId: body.userId,
-      period: body.period,
-      fileName: file.originalname
+    const statementId = uid("stmt");
+    const approval = submitForApproval({
+      entityType: "statement",
+      entityId: statementId,
+      action: "statement.uploaded",
+      requestedBy: admin,
+      beforePayload: null,
+      afterPayload: {
+        userId: body.userId,
+        period: body.period,
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+        quarantinePath
+      },
+      reason: `Statement upload for client ${body.userId}, period ${body.period}`
     });
 
-    const row = db
-      .prepare("SELECT s.*, u.name AS client_name FROM statements s JOIN users u ON u.id = s.user_id WHERE s.id = ?")
-      .get(id) as Record<string, unknown>;
+    auditLog(admin, "statement.upload.submitted", "statement", statementId, {
+      approvalId: approval.id,
+      userId: body.userId,
+      period: body.period,
+      fileName: file.originalname,
+      fileSize: file.size
+    });
 
-    res.status(201).json({ statement: mapStatement(row) });
+    res.status(202).json({
+      pending: true,
+      approvalId: approval.id,
+      statementId,
+      message: "Statement uploaded to quarantine. Awaiting approval before publication."
+    });
   } catch (error) {
     if (req.file?.path && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
     }
     next(error);
   }
@@ -136,12 +165,21 @@ statementsRouter.delete("/:id", requireAdmin, (req, res, next) => {
 
     if (!row) throw new ApiError(404, "Statement not found", "statement_not_found");
 
-    const resolved = resolveStatementPath(row.file_path);
-    db.prepare("DELETE FROM statements WHERE id = ?").run(req.params.id);
-    if (fs.existsSync(resolved)) fs.unlinkSync(resolved);
+    const approval = submitForApproval({
+      entityType: "statement",
+      entityId: req.params.id,
+      action: "statement.deleted",
+      requestedBy: admin,
+      beforePayload: { userId: row.user_id, filePath: row.file_path },
+      afterPayload: null,
+      reason: `Statement ${req.params.id} delete`
+    });
 
-    auditLog(admin, "statement.deleted", "statement", req.params.id, { userId: row.user_id });
-    res.status(204).send();
+    auditLog(admin, "statement.delete.submitted", "statement", req.params.id, {
+      approvalId: approval.id
+    });
+
+    res.status(202).json({ pending: true, approvalId: approval.id });
   } catch (error) {
     next(error);
   }

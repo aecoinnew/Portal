@@ -1,4 +1,5 @@
 import type {
+  ApprovalRequest,
   AuditLog,
   ClientUser,
   InvestmentRequest,
@@ -72,6 +73,28 @@ export function mapStatement(row: Record<string, unknown>): Statement {
     fileName: String(row.file_name),
     fileSize: Number(row.file_size ?? 0),
     createdAt: String(row.created_at)
+  };
+}
+
+export function mapApproval(row: Record<string, unknown>): ApprovalRequest {
+  return {
+    id: String(row.id),
+    entityType: String(row.entity_type),
+    entityId: String(row.entity_id),
+    action: String(row.action),
+    requestedByUserId: String(row.requested_by_user_id),
+    requestedByName: (row.requested_by_name as string | null) ?? undefined,
+    assignedRole: (row.assigned_role as string | null) ?? null,
+    status: row.status as ApprovalRequest["status"],
+    beforeValue: (row.before_value as string | null) ?? null,
+    afterValue: (row.after_value as string | null) ?? null,
+    reason: (row.reason as string | null) ?? null,
+    decisionByUserId: (row.decision_by_user_id as string | null) ?? null,
+    decisionByName: (row.decision_by_name as string | null) ?? undefined,
+    decisionReason: (row.decision_reason as string | null) ?? null,
+    createdAt: String(row.created_at),
+    decidedAt: (row.decided_at as string | null) ?? null,
+    executedAt: (row.executed_at as string | null) ?? null
   };
 }
 

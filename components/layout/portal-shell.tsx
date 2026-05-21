@@ -11,6 +11,7 @@ import {
   LogOut,
   Package,
   Settings,
+  ShieldCheck,
   TrendingUp,
   UserRoundCog,
   UsersRound
@@ -43,6 +44,7 @@ const adminNav: NavItem[] = [
   { href: "/admin/pricing", label: "Pricing", icon: CircleDollarSign },
   { href: "/admin/requests", label: "Requests", icon: Clock3 },
   { href: "/admin/statements", label: "Statements", icon: FileText },
+  { href: "/admin/approvals", label: "Approvals", icon: ShieldCheck },
   { href: "/admin/settings", label: "Settings", icon: Settings }
 ];
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Save } from "lucide-react";
 import { ActiveBadge, ProductTypeTag } from "@/components/ui/badges";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
+import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest } from "@/lib/api/client";
 import type { PricingResponse, PricingRow } from "@/lib/types/api";
 import { formatDateTime, formatNumber, titleCase } from "@/lib/utils/format";
@@ -15,6 +16,7 @@ export default function AdminPricingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   async function load() {
     const data = await apiRequest<PricingResponse>("/pricing");
@@ -34,10 +36,15 @@ export default function AdminPricingPage() {
     setSavingId(row.productId);
     setError(null);
     try {
-      await apiRequest(`/pricing/${row.productId}`, {
+      const resp = await apiRequest<{ pending?: boolean; approvalId?: string }>(`/pricing/${row.productId}`, {
         method: "PATCH",
         body: JSON.stringify({ price: Number(drafts[row.productId]) })
       });
+      if (resp?.pending && resp.approvalId) {
+        setPendingApprovalId(resp.approvalId);
+      } else {
+        setPendingApprovalId(null);
+      }
       await load();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unable to update price");
@@ -55,6 +62,7 @@ export default function AdminPricingPage() {
         <p className="mt-1 text-[13px] text-slate-500">Latest product prices and manual price updates.</p>
       </div>
 
+      {pendingApprovalId ? <PendingApprovalBanner approvalId={pendingApprovalId} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <div className="card">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api/client";
 import { clearStoredToken, getStoredToken, setStoredToken } from "@/lib/auth/storage";
 import type { AuthUser, UserRole } from "@/lib/types/domain";
+import { isAdminRole } from "@/lib/types/domain";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -80,6 +81,9 @@ export function useAuth() {
   return context;
 }
 
-export function roleHome(role: UserRole) {
-  return role === "admin" ? "/admin/dashboard" : "/client/dashboard";
+export function roleHome(role: UserRole): string {
+  if (isAdminRole(role)) {
+    return "/admin/dashboard";
+  }
+  return "/client/dashboard";
 }

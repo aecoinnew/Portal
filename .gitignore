@@ -4,6 +4,37 @@ dist
 dist-server
 .env
 *.log
+logs/
 server/data
 server/uploads/statements/*
 !server/uploads/statements/.gitkeep
+
+# Production data paths (if moved outside repo)
+../data/
+../uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+dist-server/
+out/
+build/
+data/
+uploads/
+backups/
+.cache/
+coverage/
+*.sqlite
+*.sqlite-journal
+*.pdf
+.pm2/
+/tmp/
