@@ -106,3 +106,45 @@ in this runbook, in chat history, in environment variables, or in any logs.**
 - Audit log filter: `sqlite3 ... "SELECT created_at, action, entity_type, entity_id FROM audit_logs ORDER BY created_at DESC LIMIT 50;"`
 - Quarantine status: `ls -la /opt/emcoin/uploads/statements/.quarantine/`
 - Approval handler errors are logged as JSON with code `approval_handler_failed` to `/opt/emcoin/logs/api-error.log`.
+
+## Master Admin governance: why direct execution, not maker-checker
+
+Master Admin actions (user creation, role changes, status changes, password
+resets) use **direct execution with inline safety guards** rather than the
+maker-checker approval flow used for data-plane actions.
+
+### Rationale
+
+1. **Deadlock prevention.** If the only super_admin submits a role change
+   under maker-checker, no one else has permission to approve it. The system
+   would be permanently stuck. Direct execution with self-protection guards
+   avoids this entirely.
+
+2. **Operational urgency.** Suspending a compromised account or resetting a
+   locked-out user's password must happen immediately. A multi-step approval
+   flow adds dangerous latency to security-critical actions.
+
+3. **Equivalent safety via inline guards.** The following controls provide
+   the same protection that maker-checker would:
+   - Only `super_admin` can access the Master Admin dashboard (hard gate).
+   - A super_admin cannot demote or suspend themselves.
+   - The system refuses any action that would leave zero active super_admins.
+   - Every action writes a detailed audit log with `requestId`, actor, target,
+     before/after state, and timestamp.
+   - Temporary passwords are generated server-side, returned once, never
+     persisted as plaintext, and force `must_change_password = 1`.
+
+4. **Audit trail is the accountability mechanism.** Any governance action is
+   immediately visible in the audit log. A second super_admin can review and
+   reverse any action after the fact, which is operationally equivalent to
+   pre-approval for this class of action.
+
+### When to reconsider
+
+If the organization grows to have 3+ super_admins and wants pre-approval for
+role promotions specifically (e.g. promoting someone to super_admin), a
+targeted maker-checker gate on that single action would be reasonable. The
+current architecture supports adding it without refactoring — just route the
+`master.user.role_changed` action through `submitForApproval()` with a
+special-case handler. Not implemented now because the current team size
+(1-2 super_admins) makes it a deadlock risk.
