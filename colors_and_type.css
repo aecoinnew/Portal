@@ -1,0 +1,326 @@
+/* ============================================================
+   Emcoin Design System — Foundation Tokens
+   Light primary + dark optional. Dense/pro financial UI.
+   ============================================================ */
+
+/* --- Webfonts ------------------------------------------------
+   • Space Grotesk — brand display / headings (uploaded TTF)
+   • Inter         — UI / body (Google Fonts)
+   • JetBrains Mono — tabular numerics, code (Google Fonts)
+   ----------------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("fonts/SpaceGrotesk-VariableFont_wght.ttf") format("truetype-variations"),
+       url("fonts/SpaceGrotesk-VariableFont_wght.ttf") format("truetype");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   COLOR TOKENS
+   ============================================================ */
+:root {
+  /* --- Primitive: Navy (primary brand) ---------------------- */
+  --navy-50:  #EEF2FB;
+  --navy-100: #D6DEF3;
+  --navy-200: #ADBDE7;
+  --navy-300: #7A93D6;
+  --navy-400: #4D6CC1;
+  --navy-500: #2A4DAB;
+  --navy-600: #163C9C;       /* hover */
+  --navy-700: #0B3D91;       /* PRIMARY — Emcoin Blue */
+  --navy-800: #0A2A6B;
+  --navy-900: #061944;
+  --navy-950: #030D26;
+
+  /* --- Primitive: Slate (neutrals) -------------------------- */
+  --slate-25:  #FBFCFD;
+  --slate-50:  #F6F8FA;
+  --slate-100: #EEF1F4;
+  --slate-200: #E1E5EB;
+  --slate-300: #C9D0D9;
+  --slate-400: #9AA4B2;
+  --slate-500: #6B7280;
+  --slate-600: #4B5563;
+  --slate-700: #344256;
+  --slate-800: #1E2A3D;
+  --slate-900: #0F1828;
+  --slate-950: #060B17;
+
+  /* --- Primitive: Sand (GCC-flavored warm neutral) ---------- */
+  --sand-50:  #FAF7F1;
+  --sand-100: #F1EBDB;
+  --sand-200: #E2D7B8;
+  --sand-300: #C9B681;
+  --sand-400: #B0944D;       /* gold accent */
+  --sand-500: #8A7137;
+  --sand-600: #6A5727;
+
+  /* --- Financial state colors (P/L) ------------------------- */
+  --gain-50:  #ECFDF3;
+  --gain-100: #D1FADF;
+  --gain-500: #12B76A;       /* gain — primary */
+  --gain-600: #039855;
+  --gain-700: #027A48;
+
+  --loss-50:  #FEF3F2;
+  --loss-100: #FEE4E2;
+  --loss-500: #F04438;       /* loss — primary */
+  --loss-600: #D92D20;
+  --loss-700: #B42318;
+
+  --warn-50:  #FFFAEB;
+  --warn-100: #FEF0C7;
+  --warn-500: #F79009;
+  --warn-700: #B54708;
+
+  --info-50:  #EFF8FF;
+  --info-100: #D1E9FF;
+  --info-500: #2E90FA;
+  --info-700: #175CD3;
+
+  /* --- Semantic: surfaces (light theme default) ------------- */
+  --bg-app:        var(--slate-50);
+  --bg-surface:    #FFFFFF;
+  --bg-surface-2:  var(--slate-25);
+  --bg-surface-3:  var(--slate-100);
+  --bg-inverse:    var(--navy-900);
+  --bg-overlay:    rgba(15, 24, 40, 0.55);
+
+  /* --- Semantic: foreground -------------------------------- */
+  --fg-1: var(--slate-900);   /* primary text */
+  --fg-2: var(--slate-700);   /* secondary text */
+  --fg-3: var(--slate-500);   /* tertiary / labels */
+  --fg-4: var(--slate-400);   /* disabled / hints */
+  --fg-on-primary: #FFFFFF;
+  --fg-on-accent:  #FFFFFF;
+
+  /* --- Semantic: borders ----------------------------------- */
+  --border-subtle: var(--slate-200);
+  --border-default: var(--slate-300);
+  --border-strong: var(--slate-400);
+  --border-focus: var(--navy-700);
+
+  /* --- Semantic: brand & accent --------------------------- */
+  --accent-primary: var(--navy-700);
+  --accent-primary-hover: var(--navy-800);
+  --accent-primary-soft: var(--navy-50);
+  --accent-gold: var(--sand-400);
+  --accent-gold-soft: var(--sand-50);
+
+  /* --- Semantic: financial -------------------------------- */
+  --fin-gain: var(--gain-600);
+  --fin-gain-bg: var(--gain-50);
+  --fin-loss: var(--loss-600);
+  --fin-loss-bg: var(--loss-50);
+  --fin-flat: var(--slate-500);
+
+  /* --- Spacing scale (4px grid) --------------------------- */
+  --space-0: 0;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+  --space-11: 64px;
+  --space-12: 80px;
+  --space-13: 96px;
+
+  /* --- Radii ---------------------------------------------- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-pill: 999px;
+
+  /* --- Shadows (restrained, financial) -------------------- */
+  --shadow-xs: 0 1px 1px 0 rgba(15, 24, 40, 0.04);
+  --shadow-sm: 0 1px 2px 0 rgba(15, 24, 40, 0.06), 0 1px 3px 0 rgba(15, 24, 40, 0.04);
+  --shadow-md: 0 2px 4px -1px rgba(15, 24, 40, 0.06), 0 4px 8px -2px rgba(15, 24, 40, 0.06);
+  --shadow-lg: 0 4px 8px -2px rgba(15, 24, 40, 0.08), 0 10px 20px -4px rgba(15, 24, 40, 0.08);
+  --shadow-xl: 0 12px 24px -6px rgba(15, 24, 40, 0.12), 0 20px 40px -10px rgba(15, 24, 40, 0.10);
+  --shadow-inset: inset 0 1px 2px 0 rgba(15, 24, 40, 0.06);
+  --shadow-focus: 0 0 0 3px rgba(11, 61, 145, 0.18);
+
+  /* --- Motion --------------------------------------------- */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 280ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Type families ------------------------------------- */
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif; /* brand display + large headings */
+  --font-sans:    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* UI + body */
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* code, addresses */
+  --font-tabular: "Inter", ui-sans-serif, system-ui, sans-serif; /* numerics — pair with font-variant-numeric: tabular-nums */
+
+  /* --- Type scale (dense/pro) ---------------------------- */
+  --text-xs: 11px;     /* table micro */
+  --text-sm: 12px;     /* table default */
+  --text-base: 13px;   /* body small */
+  --text-md: 14px;     /* body */
+  --text-lg: 16px;     /* emphasis */
+  --text-xl: 18px;     /* card titles */
+  --text-2xl: 22px;    /* section titles */
+  --text-3xl: 28px;    /* page titles */
+  --text-4xl: 36px;    /* hero secondary */
+  --text-5xl: 48px;    /* hero */
+  --text-6xl: 64px;    /* display */
+
+  --leading-tight: 1.15;
+  --leading-snug:  1.3;
+  --leading-base:  1.5;
+  --leading-loose: 1.65;
+
+  --tracking-tight: -0.02em;
+  --tracking-base: 0;
+  --tracking-wide: 0.04em;
+  --tracking-caps: 0.08em;
+
+  /* --- Layout ---------------------------------------------- */
+  --max-content: 1280px;
+  --sidebar-w: 248px;
+  --topbar-h: 56px;
+}
+
+/* ============================================================
+   DARK THEME (optional)
+   ============================================================ */
+[data-theme="dark"] {
+  --bg-app:        var(--slate-950);
+  --bg-surface:    var(--slate-900);
+  --bg-surface-2:  #0B1426;
+  --bg-surface-3:  var(--slate-800);
+  --bg-inverse:    #FFFFFF;
+  --bg-overlay:    rgba(0, 0, 0, 0.65);
+
+  --fg-1: #F2F4F7;
+  --fg-2: var(--slate-300);
+  --fg-3: var(--slate-400);
+  --fg-4: var(--slate-500);
+  --fg-on-primary: #FFFFFF;
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --accent-primary: var(--navy-400);
+  --accent-primary-hover: var(--navy-300);
+  --accent-primary-soft: rgba(45, 79, 191, 0.16);
+
+  --fin-gain: #32D583;
+  --fin-gain-bg: rgba(50, 213, 131, 0.10);
+  --fin-loss: #F97066;
+  --fin-loss-bg: rgba(249, 112, 102, 0.10);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.40);
+  --shadow-md: 0 2px 6px 0 rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 20px 0 rgba(0, 0, 0, 0.50);
+}
+
+/* ============================================================
+   SEMANTIC TYPE STYLES
+   ============================================================ */
+.eds-display {
+  font-family: var(--font-display);
+  font-size: var(--text-6xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--fg-1);
+}
+.eds-h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--fg-1);
+}
+.eds-h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  color: var(--fg-1);
+}
+.eds-h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  font-weight: 600;
+  color: var(--fg-1);
+}
+.eds-h4 {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  font-weight: 600;
+  color: var(--fg-1);
+}
+.eds-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-base);
+  color: var(--fg-2);
+}
+.eds-body-sm {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--fg-2);
+}
+.eds-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--fg-3);
+}
+.eds-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-feature-settings: "ss01" on;
+}
+.eds-num {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on, "cv11" on;
+}
+.eds-num-lg {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on;
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+/* ============================================================
+   BASE / RESET (opt-in)
+   ============================================================ */
+.eds-app {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-base);
+  color: var(--fg-1);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

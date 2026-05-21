@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emcoin — Typography</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg-app); padding: 40px; color: var(--fg-1); -webkit-font-smoothing: antialiased; }
+.page { max-width: 820px; }
+.section { margin-bottom: 48px; }
+.label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); }
+.type-row { display: flex; align-items: baseline; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--border-subtle); }
+.type-row:last-child { border-bottom: none; }
+.type-meta { width: 160px; flex-shrink: 0; }
+.type-meta-name { font-size: 12px; font-weight: 600; color: var(--fg-2); }
+.type-meta-spec { font-size: 11px; color: var(--fg-3); font-family: var(--font-mono); margin-top: 2px; line-height: 1.6; }
+.type-sample { flex: 1; }
+.divider { height: 1px; background: var(--border-subtle); margin: 40px 0; }
+.num-row { display: flex; gap: 40px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
+.num-row:last-child { border-bottom: none; }
+.num-label { font-size: 11px; color: var(--fg-3); width: 120px; }
+.num-sample { font-size: 22px; font-weight: 600; font-family: var(--font-sans); font-variant-numeric: tabular-nums; color: var(--fg-1); }
+.gain { color: var(--fin-gain); }
+.loss { color: var(--fin-loss); }
+.pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.pair-card { background: white; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 24px; }
+.pair-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div style="margin-bottom:36px;">
+    <div style="font-family:var(--font-display); font-size:32px; font-weight:600; letter-spacing:-0.02em; color:var(--fg-1);">Typography system</div>
+    <p style="font-size:13px; color:var(--fg-3); margin-top:6px;">Space Grotesk · Inter · JetBrains Mono</p>
+  </div>
+
+  <!-- Display — Space Grotesk -->
+  <div class="section">
+    <div class="label">Display — Space Grotesk (brand display font)</div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">Display</div><div class="type-meta-spec">64px · 500<br>tracking −0.02em</div></div>
+      <div class="type-sample" style="font-family:var(--font-display); font-size:56px; font-weight:500; letter-spacing:-0.02em; line-height:1.1;">Emcoin<br>Investment</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">H1</div><div class="type-meta-spec">36px · 500<br>tracking −0.02em</div></div>
+      <div class="type-sample" style="font-family:var(--font-display); font-size:36px; font-weight:500; letter-spacing:-0.02em; line-height:1.2;">Portfolio overview</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">H2</div><div class="type-meta-spec">28px · 500<br>tracking −0.02em</div></div>
+      <div class="type-sample" style="font-family:var(--font-display); font-size:28px; font-weight:500; letter-spacing:-0.02em; line-height:1.25;">Asset allocation</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">H3</div><div class="type-meta-spec">18px · 600<br>tracking 0</div></div>
+      <div class="type-sample" style="font-family:var(--font-sans); font-size:18px; font-weight:600; line-height:1.3;">Holdings by instrument</div>
+    </div>
+  </div>
+
+  <!-- UI — Inter -->
+  <div class="section">
+    <div class="label">UI — Inter (body, tables, controls)</div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">Body MD</div><div class="type-meta-spec">14px · 400<br>leading 1.5</div></div>
+      <div class="type-sample" style="font-size:14px; line-height:1.5; color:var(--fg-2);">Your portfolio is composed of equities, sukuk, and private fund positions. Contact your relationship manager to submit a request.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">Body SM</div><div class="type-meta-spec">13px · 400<br>leading 1.5</div></div>
+      <div class="type-sample" style="font-size:13px; line-height:1.5; color:var(--fg-2);">Manual prices for sukuk and private instruments are updated by the Emcoin portfolio team. Last updated 28 Apr 2026.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">Label / table</div><div class="type-meta-spec">12px · 500<br>leading 1.4</div></div>
+      <div class="type-sample" style="font-size:12px; font-weight:500; color:var(--fg-2);">Submit request · View statement · Pending approval</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">Micro / eyebrow</div><div class="type-meta-spec">11px · 600<br>tracking +0.08em<br>uppercase</div></div>
+      <div class="type-sample" style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--fg-3);">Portfolio value &nbsp;·&nbsp; Unrealized P/L &nbsp;·&nbsp; Asset class</div>
+    </div>
+  </div>
+
+  <!-- Numeric specimens -->
+  <div class="section">
+    <div class="label">Numeric specimens — tabular-nums mandatory</div>
+    <div class="num-row">
+      <div class="num-label">KPI / Portfolio</div>
+      <div class="num-sample" style="font-size:32px; font-weight:700;">1,245,300.00 <span style="font-size:16px; font-weight:400; color:var(--fg-3);">SAR</span></div>
+    </div>
+    <div class="num-row">
+      <div class="num-label">P/L gain</div>
+      <div class="num-sample gain">+12,400.00 SAR &nbsp;<span style="font-size:16px;">+2.41%</span></div>
+    </div>
+    <div class="num-row">
+      <div class="num-label">P/L loss</div>
+      <div class="num-sample loss" style="font-size:20px;">−3,210.00 SAR &nbsp;−0.62%</div>
+    </div>
+    <div class="num-row">
+      <div class="num-label">Table price</div>
+      <div style="font-size:13px; font-family:var(--font-sans); font-variant-numeric:tabular-nums; color:var(--fg-1);">
+        <table style="border-collapse:collapse;">
+          <tr style="background:#F6F8FA;">
+            <th style="padding:8px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3); text-align:left;">Instrument</th>
+            <th style="padding:8px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3); text-align:right;">Price</th>
+            <th style="padding:8px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3); text-align:right;">Change</th>
+          </tr>
+          <tr style="border-top:1px solid #E1E5EB;">
+            <td style="padding:10px 16px; font-size:12px; color:var(--fg-1);">Saudi Aramco</td>
+            <td style="padding:10px 16px; font-size:12px; text-align:right;">32.40 SAR</td>
+            <td style="padding:10px 16px; font-size:12px; text-align:right; color:#039855;">+1.25%</td>
+          </tr>
+          <tr style="border-top:1px solid #E1E5EB;">
+            <td style="padding:10px 16px; font-size:12px; color:var(--fg-1);">Emcoin Sukuk I</td>
+            <td style="padding:10px 16px; font-size:12px; text-align:right;">1,003.50 SAR</td>
+            <td style="padding:10px 16px; font-size:12px; text-align:right; color:#D92D20;">−0.30%</td>
+          </tr>
+          <tr style="border-top:1px solid #E1E5EB;">
+            <td style="padding:10px 16px; font-size:12px; color:var(--fg-1);">Bitcoin</td>
+            <td style="padding:10px 16px; font-size:12px; text-align:right;">246,840.00 SAR</td>
+            <td style="padding:10px 16px; font-size:12px; text-align:right; color:#039855;">+4.10%</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mono -->
+  <div class="section">
+    <div class="label">Mono — JetBrains Mono (IDs, codes, raw data)</div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">Reference ID</div><div class="type-meta-spec">12px · 500<br>mono</div></div>
+      <div class="type-sample" style="font-family:var(--font-mono); font-size:13px; color:var(--fg-2);">REQ-A1B2C3 &nbsp;·&nbsp; STM-2025-Q3 &nbsp;·&nbsp; USR-00142</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-meta-name">ISIN / ticker</div><div class="type-meta-spec">11px · 400<br>mono</div></div>
+      <div class="type-sample" style="font-family:var(--font-mono); font-size:11px; color:var(--fg-3);">SA0007879139 &nbsp;·&nbsp; ARAMCO.SR &nbsp;·&nbsp; BTC-USD</div>
+    </div>
+  </div>
+
+  <!-- Font pairing showcase -->
+  <div class="section">
+    <div class="label">Pairing in context</div>
+    <div class="pair-grid">
+      <div class="pair-card">
+        <div class="pair-title">Client dashboard card</div>
+        <div style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--fg-3); margin-bottom:6px;">Portfolio value</div>
+        <div style="font-family:var(--font-display); font-size:30px; font-weight:600; letter-spacing:-0.01em; font-variant-numeric:tabular-nums; color:var(--fg-1);">1,245,300<span style="font-size:16px; font-weight:400; color:var(--fg-3);"> SAR</span></div>
+        <div style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+          <span style="font-size:12px; font-weight:500; color:#039855; font-variant-numeric:tabular-nums;">+12,400 (+2.41%)</span>
+          <span style="font-size:11px; color:var(--fg-3);">this quarter</span>
+        </div>
+      </div>
+      <div class="pair-card" style="background:#0B3D91; border-color:#0B3D91;">
+        <div class="pair-title" style="color:rgba(255,255,255,0.5);">Marketing hero (dark)</div>
+        <div style="font-family:var(--font-display); font-size:24px; font-weight:600; letter-spacing:-0.02em; color:#fff; line-height:1.2; margin-bottom:10px;">Disciplined investing for the long term.</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.65); line-height:1.5;">Emcoin provides licensed access to equities, sukuk, and private funds — under one portfolio.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

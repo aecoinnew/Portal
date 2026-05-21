@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emcoin — Client Portal</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg-app); color: var(--fg-1); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+/* Layout */
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 248px; flex-shrink: 0; background: #fff; border-right: 1px solid var(--border-subtle); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 10; }
+.sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border-subtle); }
+.sidebar-logo img { height: 36px; object-fit: contain; }
+.sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+.nav-section { margin-bottom: 4px; }
+.nav-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-4); padding: 8px 10px 4px; }
+.nav-item { display: flex; align-items: center; gap: 9px; padding: 0 10px; height: 34px; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--fg-2); cursor: pointer; transition: background 120ms; text-decoration: none; }
+.nav-item:hover { background: var(--bg-surface-3); color: var(--fg-1); }
+.nav-item.active { background: var(--accent-primary-soft); color: var(--accent-primary); }
+.nav-item svg { opacity: 0.7; flex-shrink: 0; }
+.nav-item.active svg { opacity: 1; }
+.sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--border-subtle); }
+.user-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.user-row:hover { background: var(--bg-surface-3); }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: #0B3D91; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.user-name { font-size: 13px; font-weight: 500; color: var(--fg-1); }
+.user-role { font-size: 11px; color: var(--fg-3); }
+
+/* Main */
+.main { margin-left: 248px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { height: 56px; background: #fff; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; padding: 0 24px; gap: 12px; position: sticky; top: 0; z-index: 5; }
+.topbar-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--fg-1); flex: 1; }
+.topbar-date { font-size: 12px; color: var(--fg-3); }
+.content { padding: 24px; flex: 1; max-width: 1100px; }
+
+/* Greeting */
+.greeting { margin-bottom: 24px; }
+.greeting-name { font-family: var(--font-display); font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
+.greeting-sub { font-size: 13px; color: var(--fg-3); margin-top: 2px; }
+
+/* KPI cards */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.kpi-card { background: #fff; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 18px 20px; }
+.kpi-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 8px; }
+.kpi-value { font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--fg-1); line-height: 1; }
+.kpi-sub { font-size: 11px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.kpi-sub.gain { color: var(--fin-gain); }
+.kpi-sub.loss { color: var(--fin-loss); }
+.kpi-sub.neutral { color: var(--fg-3); }
+
+/* Two-col layout */
+.two-col { display: grid; grid-template-columns: 1fr 380px; gap: 16px; margin-bottom: 16px; }
+
+/* Card */
+.card { background: #fff; border: 1px solid var(--border-subtle); border-radius: 8px; overflow: hidden; }
+.card-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--fg-1); }
+.card-action { font-size: 12px; color: var(--accent-primary); text-decoration: none; cursor: pointer; }
+.card-action:hover { text-decoration: underline; }
+.card-body { padding: 0; }
+
+/* Holdings table */
+.table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.table th { padding: 9px 14px; font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); background: var(--bg-app); text-align: left; border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+.table th.r { text-align: right; }
+.table td { padding: 11px 14px; color: var(--fg-2); border-bottom: 1px solid #F3F5F7; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table td.r { text-align: right; }
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: var(--bg-surface-2); }
+.gain { color: var(--fin-gain); font-weight: 500; }
+.loss { color: var(--fin-loss); font-weight: 500; }
+.inst-name { font-weight: 500; color: var(--fg-1); }
+
+/* Type tags */
+.tag { display: inline-flex; align-items: center; padding: 0 7px; height: 18px; border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.tag-equity { background: #EEF2FB; color: #163C9C; }
+.tag-sukuk { background: #FAF7F1; color: #6A5727; border: 1px solid #E2D7B8; }
+.tag-crypto { background: #F5F3FF; color: #5B21B6; }
+.tag-fund { background: #EFF8FF; color: #175CD3; }
+.tag-private { background: #F6F8FA; color: #344256; border: 1px solid #E1E5EB; }
+
+/* Allocation chart — pure CSS pie-ish using conic-gradient */
+.alloc-chart { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.pie { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(#0B3D91 0% 38%, #B0944D 38% 54%, #7A93D6 54% 70%, #039855 70% 82%, #9AA4B2 82% 100%); margin: 0 auto; }
+.pie-legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.legend-name { flex: 1; color: var(--fg-2); }
+.legend-pct { font-variant-numeric: tabular-nums; font-weight: 500; color: var(--fg-1); }
+
+/* Requests table */
+.req-list { padding: 0; }
+.req-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #F3F5F7; }
+.req-row:last-child { border-bottom: none; }
+.req-type { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0 6px; height: 18px; border-radius: 3px; display: inline-flex; align-items: center; }
+.req-buy { background: #EEF2FB; color: #163C9C; }
+.req-sell { background: #FEF3F2; color: #B42318; }
+.req-sub { background: #ECFDF3; color: #027A48; }
+.req-wd { background: #FFFAEB; color: #B54708; }
+.req-name { flex: 1; font-size: 12px; font-weight: 500; color: var(--fg-1); }
+.req-date { font-size: 11px; color: var(--fg-3); }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 0 7px; height: 20px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.03em; }
+.badge::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.badge-pending { background: #FFFAEB; color: #B54708; }
+.badge-approved { background: #EFF8FF; color: #175CD3; }
+.badge-executed { background: #ECFDF3; color: #027A48; }
+.badge-rejected { background: #FEF3F2; color: #B42318; }
+
+/* Statement list */
+.stmt-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #F3F5F7; }
+.stmt-row:last-child { border-bottom: none; }
+.stmt-icon { width: 32px; height: 32px; background: #EEF2FB; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stmt-period { font-size: 12px; font-weight: 500; color: var(--fg-1); }
+.stmt-date { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+.download-btn { font-size: 11px; color: var(--accent-primary); text-decoration: none; padding: 4px 10px; border: 1px solid var(--border-subtle); border-radius: 4px; }
+.download-btn:hover { background: var(--accent-primary-soft); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="../../assets/logo-emcoin-official.png" alt="Emcoin Investment">
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Portfolio</div>
+        <a class="nav-item active" href="#">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          Portfolio
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Documents</div>
+        <a class="nav-item" href="#">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          Statements
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Activity</div>
+        <a class="nav-item" href="#">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Requests
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar">FA</div>
+        <div>
+          <div class="user-name">Faisal Al-Harbi</div>
+          <div class="user-role">Client account</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">Dashboard</div>
+      <div class="topbar-date">As of 30 Apr 2026, 14:00 GST</div>
+    </div>
+
+    <div class="content">
+      <div class="greeting">
+        <div class="greeting-name">Good afternoon, Faisal.</div>
+        <div class="greeting-sub">Here is a summary of your portfolio as of today.</div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Portfolio value</div>
+          <div class="kpi-value">1,245,300</div>
+          <div style="font-size:11px; color:var(--fg-3); margin-top:3px;">SAR</div>
+          <div class="kpi-sub gain">+29,800 (+2.45%) this qtr</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Unrealized P/L</div>
+          <div class="kpi-value" style="color:var(--fin-gain);">+29,800</div>
+          <div style="font-size:11px; color:var(--fg-3); margin-top:3px;">SAR</div>
+          <div class="kpi-sub neutral">Across 5 positions</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Positions</div>
+          <div class="kpi-value">5</div>
+          <div style="font-size:11px; color:var(--fg-3); margin-top:3px;">&nbsp;</div>
+          <div class="kpi-sub neutral">3 asset classes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Open requests</div>
+          <div class="kpi-value">2</div>
+          <div style="font-size:11px; color:var(--fg-3); margin-top:3px;">&nbsp;</div>
+          <div class="kpi-sub neutral">Pending review</div>
+        </div>
+      </div>
+
+      <!-- Holdings + Allocation -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Holdings</div>
+            <a class="card-action">View all</a>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Instrument</th>
+                  <th>Type</th>
+                  <th class="r">Qty</th>
+                  <th class="r">Avg price</th>
+                  <th class="r">Current</th>
+                  <th class="r">Value (SAR)</th>
+                  <th class="r">Unr. P/L</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="inst-name">Saudi Aramco</div><div style="font-size:10px; font-family:var(--font-mono); color:var(--fg-3);">2222.SR</div></td>
+                  <td><span class="tag tag-equity">Equity</span></td>
+                  <td class="r">5,000</td>
+                  <td class="r">28.40</td>
+                  <td class="r">32.40</td>
+                  <td class="r">162,000.00</td>
+                  <td class="r gain">+20,000.00</td>
+                </tr>
+                <tr>
+                  <td><div class="inst-name">Emcoin Sukuk I</div><div style="font-size:10px; font-family:var(--font-mono); color:var(--fg-3); color:#B0944D;">Manual price</div></td>
+                  <td><span class="tag tag-sukuk">Sukuk</span></td>
+                  <td class="r">200</td>
+                  <td class="r">1,010.00</td>
+                  <td class="r">1,003.50</td>
+                  <td class="r">200,700.00</td>
+                  <td class="r loss">−1,300.00</td>
+                </tr>
+                <tr>
+                  <td><div class="inst-name">Bitcoin</div><div style="font-size:10px; font-family:var(--font-mono); color:var(--fg-3);">BTC-USD</div></td>
+                  <td><span class="tag tag-crypto">Crypto</span></td>
+                  <td class="r">0.4200</td>
+                  <td class="r">220,000</td>
+                  <td class="r">246,840</td>
+                  <td class="r">103,673.00</td>
+                  <td class="r gain">+11,273.00</td>
+                </tr>
+                <tr>
+                  <td><div class="inst-name">MENA Growth Fund</div><div style="font-size:10px; font-family:var(--font-mono); color:var(--fg-3); color:#B0944D;">Manual price</div></td>
+                  <td><span class="tag tag-fund">Fund</span></td>
+                  <td class="r">1,200</td>
+                  <td class="r">680.00</td>
+                  <td class="r">698.50</td>
+                  <td class="r">838,200.00</td>
+                  <td class="r gain">+22,200.00</td>
+                </tr>
+                <tr>
+                  <td><div class="inst-name">Private Equity I</div><div style="font-size:10px; font-family:var(--font-mono); color:var(--fg-3); color:#B0944D;">Manual price</div></td>
+                  <td><span class="tag tag-private">Private</span></td>
+                  <td class="r">500</td>
+                  <td class="r">200.00</td>
+                  <td class="r">196.00</td>
+                  <td class="r">98,000.00</td>
+                  <td class="r loss">−2,000.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Asset allocation</div>
+          </div>
+          <div class="alloc-chart">
+            <div class="pie"></div>
+            <div class="pie-legend">
+              <div class="legend-row"><div class="legend-dot" style="background:#0B3D91;"></div><div class="legend-name">Fund</div><div class="legend-pct">38.0%</div></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#B0944D;"></div><div class="legend-name">Sukuk</div><div class="legend-pct">16.1%</div></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#7A93D6;"></div><div class="legend-name">Equity</div><div class="legend-pct">13.0%</div></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#039855;"></div><div class="legend-name">Crypto</div><div class="legend-pct">8.3%</div></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#9AA4B2;"></div><div class="legend-name">Private</div><div class="legend-pct">7.9%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Requests + Statements -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent requests</div>
+            <a class="card-action">Submit request</a>
+          </div>
+          <div class="req-list">
+            <div class="req-row">
+              <span class="req-type req-buy">Buy</span>
+              <div class="req-name">Saudi Aramco<div style="font-size:10px; color:var(--fg-3);">SAR 50,000 · 25 Apr 2026</div></div>
+              <span class="badge badge-pending">Pending</span>
+            </div>
+            <div class="req-row">
+              <span class="req-type req-sub">Subscribe</span>
+              <div class="req-name">MENA Growth Fund<div style="font-size:10px; color:var(--fg-3);">SAR 100,000 · 18 Apr 2026</div></div>
+              <span class="badge badge-executed">Executed</span>
+            </div>
+            <div class="req-row">
+              <span class="req-type req-wd">Withdraw</span>
+              <div class="req-name">Cash withdrawal<div style="font-size:10px; color:var(--fg-3);">SAR 20,000 · 10 Apr 2026</div></div>
+              <span class="badge badge-approved">Approved</span>
+            </div>
+            <div class="req-row">
+              <span class="req-type req-sell">Sell</span>
+              <div class="req-name">Emcoin Sukuk I<div style="font-size:10px; color:var(--fg-3);">SAR 30,000 · 2 Apr 2026</div></div>
+              <span class="badge badge-rejected">Rejected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Statements</div>
+            <a class="card-action">View all</a>
+          </div>
+          <div>
+            <div class="stmt-row">
+              <div class="stmt-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B3D91" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div style="flex:1;"><div class="stmt-period">Q1 2026 Statement</div><div class="stmt-date">Issued 1 Apr 2026</div></div>
+              <a class="download-btn" href="#">Download PDF</a>
+            </div>
+            <div class="stmt-row">
+              <div class="stmt-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B3D91" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div style="flex:1;"><div class="stmt-period">Q4 2025 Statement</div><div class="stmt-date">Issued 1 Jan 2026</div></div>
+              <a class="download-btn" href="#">Download PDF</a>
+            </div>
+            <div class="stmt-row">
+              <div class="stmt-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B3D91" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div style="flex:1;"><div class="stmt-period">Q3 2025 Statement</div><div class="stmt-date">Issued 1 Oct 2025</div></div>
+              <a class="download-btn" href="#">Download PDF</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emcoin — Components</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg-app); padding: 40px; color: var(--fg-1); -webkit-font-smoothing: antialiased; }
+.page { max-width: 860px; }
+.section { margin-bottom: 48px; }
+.label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; height: 36px; border-radius: 6px; font-family: var(--font-sans); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: background 120ms, box-shadow 120ms; white-space: nowrap; }
+.btn-primary { background: #0B3D91; color: #fff; }
+.btn-primary:hover { background: #0A2A6B; }
+.btn-secondary { background: #fff; color: #0B3D91; border: 1px solid #C9D0D9; }
+.btn-secondary:hover { background: #F6F8FA; }
+.btn-ghost { background: transparent; color: #344256; }
+.btn-ghost:hover { background: #EEF1F4; }
+.btn-danger { background: #FEF3F2; color: #D92D20; border: 1px solid #FEE4E2; }
+.btn-sm { height: 28px; padding: 0 12px; font-size: 12px; border-radius: 4px; }
+.btn-lg { height: 44px; padding: 0 24px; font-size: 14px; }
+.btn-disabled { opacity: 0.45; pointer-events: none; }
+
+/* Status badges */
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 0 8px; height: 22px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.badge-pending { background: #FFFAEB; color: #B54708; }
+.badge-approved { background: #EFF8FF; color: #175CD3; }
+.badge-executed { background: #ECFDF3; color: #027A48; }
+.badge-rejected { background: #FEF3F2; color: #B42318; }
+.badge-suspended { background: #EEF1F4; color: #344256; }
+
+/* Type badges */
+.type-tag { display: inline-flex; align-items: center; padding: 0 8px; height: 20px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.tag-equity { background: #EEF2FB; color: #163C9C; }
+.tag-sukuk { background: #FAF7F1; color: #6A5727; border: 1px solid #E2D7B8; }
+.tag-crypto { background: #F5F3FF; color: #5B21B6; }
+.tag-fund { background: #EFF8FF; color: #175CD3; }
+.tag-private { background: #F9FAFB; color: #344256; border: 1px solid #E1E5EB; }
+.tag-manual { background: #FAF7F1; color: #B0944D; border: 1px solid #E2D7B8; }
+
+/* Input */
+.input-wrap { display: flex; flex-direction: column; gap: 5px; width: 240px; }
+.input-label { font-size: 12px; font-weight: 500; color: var(--fg-2); }
+.input { height: 36px; border: 1px solid #C9D0D9; border-radius: 6px; padding: 0 12px; font-family: var(--font-sans); font-size: 13px; color: var(--fg-1); background: #fff; outline: none; transition: border 120ms, box-shadow 120ms; }
+.input:focus { border-color: #0B3D91; box-shadow: 0 0 0 3px rgba(11,61,145,0.12); }
+.input-hint { font-size: 11px; color: var(--fg-3); }
+.input-error { border-color: #D92D20 !important; }
+.input-error-msg { font-size: 11px; color: #D92D20; }
+
+/* Card */
+.card { background: #fff; border: 1px solid #E1E5EB; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(15,24,40,0.06); }
+.card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6B7280; margin-bottom: 6px; }
+.card-value { font-family: var(--font-display); font-size: 28px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--fg-1); }
+.card-delta { font-size: 12px; font-weight: 500; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+/* Table */
+.table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.table th { padding: 10px 14px; font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); background: #F6F8FA; text-align: left; border-bottom: 1px solid #E1E5EB; }
+.table th.right { text-align: right; }
+.table td { padding: 10px 14px; color: var(--fg-2); border-bottom: 1px solid #EEF1F4; font-variant-numeric: tabular-nums; }
+.table td.right { text-align: right; }
+.table tr:hover td { background: #F6F8FA; }
+.table .gain { color: #039855; font-weight: 500; }
+.table .loss { color: #D92D20; font-weight: 500; }
+
+/* Nav */
+.sidebar-nav { width: 200px; background: #fff; border: 1px solid #E1E5EB; border-radius: 8px; padding: 8px; }
+.nav-item { display: flex; align-items: center; gap: 9px; padding: 0 10px; height: 34px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #4B5563; cursor: pointer; transition: background 120ms; }
+.nav-item:hover { background: #EEF1F4; }
+.nav-item.active { background: #EEF2FB; color: #0B3D91; }
+.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div style="margin-bottom:36px;">
+    <div style="font-family:var(--font-display); font-size:28px; font-weight:600; letter-spacing:-0.02em;">Components</div>
+    <p style="font-size:13px; color:var(--fg-3); margin-top:4px;">Core UI building blocks — Emcoin Investment design system</p>
+  </div>
+
+  <div class="section">
+    <div class="label">Buttons</div>
+    <div class="row">
+      <button class="btn btn-primary">Submit request</button>
+      <button class="btn btn-secondary">View statement</button>
+      <button class="btn btn-ghost">Cancel</button>
+      <button class="btn btn-danger">Reject</button>
+    </div>
+    <div class="row">
+      <button class="btn btn-primary btn-sm">Submit</button>
+      <button class="btn btn-secondary btn-sm">Download</button>
+      <button class="btn btn-primary btn-lg">Open account</button>
+      <button class="btn btn-primary btn-disabled">Processing…</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Status badges</div>
+    <div class="row">
+      <span class="badge badge-pending">Pending</span>
+      <span class="badge badge-approved">Approved</span>
+      <span class="badge badge-executed">Executed</span>
+      <span class="badge badge-rejected">Rejected</span>
+      <span class="badge badge-suspended">Suspended</span>
+    </div>
+    <div style="margin-top:12px;" class="label" style="margin-bottom:12px; border:none; padding:0;">Product type tags</div>
+    <div class="row">
+      <span class="type-tag tag-equity">Equity</span>
+      <span class="type-tag tag-sukuk">Sukuk</span>
+      <span class="type-tag tag-crypto">Crypto</span>
+      <span class="type-tag tag-fund">Fund</span>
+      <span class="type-tag tag-private">Private</span>
+      <span class="type-tag tag-manual">Manual price</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Inputs</div>
+    <div class="row" style="align-items:flex-start;">
+      <div class="input-wrap">
+        <span class="input-label">Amount (SAR)</span>
+        <input class="input" type="text" value="50,000.00" />
+        <span class="input-hint">Minimum: SAR 10,000</span>
+      </div>
+      <div class="input-wrap">
+        <span class="input-label">Message</span>
+        <input class="input input-error" type="text" placeholder="Describe your request…" />
+        <span class="input-error-msg">This field is required.</span>
+      </div>
+      <div class="input-wrap">
+        <span class="input-label">Product</span>
+        <select class="input" style="appearance:none; background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\"); background-repeat:no-repeat; background-position:right 12px center;">
+          <option>Select product…</option>
+          <option selected>Saudi Aramco (Equity)</option>
+          <option>Emcoin Sukuk Fund I</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">KPI cards</div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+      <div class="card">
+        <div class="card-label">Portfolio value</div>
+        <div class="card-value">1,245,300<span style="font-size:14px; font-weight:400; color:var(--fg-3);"> SAR</span></div>
+        <div class="card-delta" style="color:#039855;">+12,400 (+2.41%) this quarter</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Unrealized P/L</div>
+        <div class="card-value" style="color:#039855;">+29,800</div>
+        <div class="card-delta" style="color:var(--fg-3);">Across 6 positions</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Pending requests</div>
+        <div class="card-value">3</div>
+        <div class="card-delta" style="color:var(--fg-3);">2 buy · 1 withdraw</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Data table</div>
+    <div style="background:#fff; border:1px solid #E1E5EB; border-radius:8px; overflow:hidden;">
+      <table class="table" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Instrument</th>
+            <th>Type</th>
+            <th class="right">Qty</th>
+            <th class="right">Avg price</th>
+            <th class="right">Current price</th>
+            <th class="right">Value (SAR)</th>
+            <th class="right">Unr. P/L</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:500; color:var(--fg-1);">Saudi Aramco</td>
+            <td><span class="type-tag tag-equity">Equity</span></td>
+            <td class="right">5,000</td>
+            <td class="right">28.40</td>
+            <td class="right">32.40</td>
+            <td class="right">162,000.00</td>
+            <td class="right gain">+20,000.00</td>
+          </tr>
+          <tr>
+            <td style="font-weight:500; color:var(--fg-1);">Emcoin Sukuk I</td>
+            <td><span class="type-tag tag-sukuk">Sukuk</span></td>
+            <td class="right">200</td>
+            <td class="right">1,010.00</td>
+            <td class="right">1,003.50</td>
+            <td class="right">200,700.00</td>
+            <td class="right loss">−1,300.00</td>
+          </tr>
+          <tr>
+            <td style="font-weight:500; color:var(--fg-1);">Bitcoin</td>
+            <td><span class="type-tag tag-crypto">Crypto</span></td>
+            <td class="right">0.4200</td>
+            <td class="right">220,000</td>
+            <td class="right">246,840</td>
+            <td class="right">103,673.00</td>
+            <td class="right gain">+11,273.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Navigation</div>
+    <div style="display:flex; gap:32px; align-items:flex-start;">
+      <div>
+        <p style="font-size:11px; color:var(--fg-3); margin-bottom:8px;">Client portal nav</p>
+        <div class="sidebar-nav">
+          <div class="nav-item active"><div class="nav-dot"></div>Dashboard</div>
+          <div class="nav-item"><div class="nav-dot"></div>Portfolio</div>
+          <div class="nav-item"><div class="nav-dot"></div>Statements</div>
+          <div class="nav-item"><div class="nav-dot"></div>Requests</div>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:11px; color:var(--fg-3); margin-bottom:8px;">Admin portal nav</p>
+        <div class="sidebar-nav">
+          <div class="nav-item active"><div class="nav-dot"></div>Dashboard</div>
+          <div class="nav-item"><div class="nav-dot"></div>Clients</div>
+          <div class="nav-item"><div class="nav-dot"></div>Products</div>
+          <div class="nav-item"><div class="nav-dot"></div>Portfolios</div>
+          <div class="nav-item"><div class="nav-dot"></div>Pricing</div>
+          <div class="nav-item"><div class="nav-dot"></div>Requests</div>
+          <div class="nav-item"><div class="nav-dot"></div>Statements</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emcoin Investment — Pitch Deck</title>
+<script src="../../deck-stage.js"></script>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("../../fonts/SpaceGrotesk-VariableFont_wght.ttf") format("truetype");
+  font-weight: 300 700;
+  font-display: swap;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0B3D91;
+  --navy-dark: #061944;
+  --sky: #7DB8E8;
+  --gold: #B0944D;
+  --gold-light: #E2D7B8;
+  --gain: #039855;
+  --loss: #D92D20;
+  --white: #ffffff;
+  --slate-50: #F6F8FA;
+  --slate-200: #E1E5EB;
+  --slate-400: #9AA4B2;
+  --slate-600: #4B5563;
+  --slate-800: #1E2A3D;
+  --slate-900: #0F1828;
+  --font-d: "Space Grotesk", sans-serif;
+  --font-u: "Inter", sans-serif;
+  --font-m: "JetBrains Mono", monospace;
+}
+
+/* Slide base */
+section {
+  width: 1280px; height: 720px;
+  font-family: var(--font-u);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Mesh SVG helper — inline via bg */
+.mesh-overlay {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+
+/* ── Slide 1: Title ────────────────────────────────── */
+.s-title { background: var(--navy); display: flex; }
+.s-title .left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 72px; position: relative; z-index: 1; }
+.s-title .right { width: 460px; position: relative; display: flex; align-items: center; justify-content: center; }
+.s-title .right img.logo { width: 340px; position: relative; z-index: 1; filter: drop-shadow(0 20px 60px rgba(0,0,0,0.4)); }
+.s-title .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+.s-title h1 { font-family: var(--font-d); font-size: 52px; font-weight: 600; color: var(--white); line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 20px; }
+.s-title .subtitle { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.65; max-width: 420px; margin-bottom: 40px; }
+.s-title .date-line { font-size: 12px; color: rgba(255,255,255,0.3); letter-spacing: 0.04em; }
+.s-title .divider { width: 48px; height: 3px; background: var(--gold); margin-bottom: 28px; border-radius: 2px; }
+
+/* ── Slide 2: About ─────────────────────────────────── */
+.s-about { background: var(--white); display: flex; flex-direction: column; justify-content: center; padding: 72px; }
+.slide-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+.slide-h { font-family: var(--font-d); font-size: 40px; font-weight: 600; letter-spacing: -0.025em; color: var(--slate-900); margin-bottom: 16px; line-height: 1.1; }
+.slide-body { font-size: 15px; color: var(--slate-600); line-height: 1.7; max-width: 640px; margin-bottom: 40px; }
+.pillars-row { display: flex; gap: 20px; }
+.pillar { flex: 1; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 24px 20px; }
+.pillar-n { font-family: var(--font-d); font-size: 28px; font-weight: 700; color: var(--navy); opacity: 0.2; margin-bottom: 8px; }
+.pillar-t { font-size: 13px; font-weight: 600; color: var(--slate-900); margin-bottom: 6px; }
+.pillar-b { font-size: 12px; color: var(--slate-600); line-height: 1.55; }
+
+/* ── Slide 3: Products ───────────────────────────────── */
+.s-products { background: var(--slate-50); display: flex; flex-direction: column; justify-content: center; padding: 64px 72px; }
+.products-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 32px; }
+.product-card { background: var(--white); border: 1px solid var(--slate-200); border-radius: 10px; padding: 20px 16px; }
+.product-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.product-title { font-size: 13px; font-weight: 600; color: var(--slate-900); margin-bottom: 6px; }
+.product-desc { font-size: 11px; color: var(--slate-600); line-height: 1.5; }
+.product-tag { display: inline-block; margin-top: 10px; padding: 0 6px; height: 16px; line-height: 16px; border-radius: 3px; font-size: 8px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* ── Slide 4: Big Number ────────────────────────────── */
+.s-bignum { background: var(--navy); display: grid; grid-template-columns: 1fr 1fr; }
+.bignum-left { display: flex; flex-direction: column; justify-content: center; padding: 72px; border-right: 1px solid rgba(255,255,255,0.08); }
+.bignum-right { display: grid; grid-template-columns: 1fr 1fr; }
+.stat-cell { display: flex; flex-direction: column; justify-content: center; padding: 40px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.stat-cell:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.08); }
+.stat-cell:nth-child(3), .stat-cell:nth-child(4) { border-bottom: none; }
+.stat-num { font-family: var(--font-d); font-size: 42px; font-weight: 700; color: var(--white); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 6px; }
+.stat-lbl { font-size: 12px; color: rgba(255,255,255,0.45); }
+.stat-gold { color: var(--gold); }
+
+/* ── Slide 5: Platform ──────────────────────────────── */
+.s-platform { background: var(--white); display: flex; flex-direction: column; justify-content: center; padding: 64px 72px; }
+.two-portal { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+.portal-card { border-radius: 12px; padding: 28px 24px; }
+.portal-card.client { background: #EEF2FB; border: 1px solid #ADBDE7; }
+.portal-card.admin { background: var(--navy); }
+.portal-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.portal-card.client .portal-label { color: var(--navy); }
+.portal-card.admin .portal-label { color: rgba(255,255,255,0.4); }
+.portal-title { font-family: var(--font-d); font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+.portal-card.client .portal-title { color: var(--navy); }
+.portal-card.admin .portal-title { color: var(--white); }
+.feature-list { display: flex; flex-direction: column; gap: 6px; }
+.feature-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.portal-card.client .feature-item { color: var(--slate-600); }
+.portal-card.admin .feature-item { color: rgba(255,255,255,0.65); }
+.feature-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+.portal-card.client .feature-dot { background: var(--navy); }
+.portal-card.admin .feature-dot { background: var(--gold); }
+
+/* ── Slide 6: Technology ────────────────────────────── */
+.s-tech { background: var(--slate-50); display: flex; flex-direction: column; justify-content: center; padding: 64px 72px; }
+.tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+.tech-card { background: var(--white); border: 1px solid var(--slate-200); border-radius: 10px; padding: 20px; }
+.tech-layer { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.tech-title { font-size: 13px; font-weight: 600; color: var(--slate-900); margin-bottom: 6px; }
+.tech-items { display: flex; flex-direction: column; gap: 3px; }
+.tech-item { font-size: 11px; color: var(--slate-600); font-family: var(--font-m); }
+
+/* ── Slide 7: Quote ─────────────────────────────────── */
+.s-quote { background: var(--navy-dark); display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 80px; text-align: center; }
+.quote-mark { font-family: var(--font-d); font-size: 80px; color: var(--gold); opacity: 0.4; line-height: 0.6; margin-bottom: 24px; }
+.quote-text { font-family: var(--font-d); font-size: 32px; font-weight: 500; color: var(--white); line-height: 1.35; letter-spacing: -0.02em; max-width: 800px; margin-bottom: 28px; }
+.quote-attr { font-size: 13px; color: rgba(255,255,255,0.4); letter-spacing: 0.04em; }
+.quote-line { width: 40px; height: 2px; background: var(--gold); margin: 0 auto 16px; border-radius: 1px; }
+
+/* ── Slide 8: Security ──────────────────────────────── */
+.s-security { background: var(--white); display: flex; flex-direction: column; justify-content: center; padding: 64px 72px; }
+.security-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 32px; }
+.sec-card { padding: 20px; border-left: 3px solid var(--navy); padding-left: 18px; }
+.sec-num { font-family: var(--font-d); font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.sec-title { font-size: 13px; font-weight: 600; color: var(--slate-900); margin-bottom: 6px; }
+.sec-body { font-size: 11px; color: var(--slate-600); line-height: 1.55; }
+
+/* ── Slide 9: Roadmap ───────────────────────────────── */
+.s-roadmap { background: var(--slate-50); display: flex; flex-direction: column; justify-content: center; padding: 64px 72px; }
+.timeline { display: flex; gap: 0; margin-top: 32px; position: relative; }
+.timeline::before { content:''; position:absolute; top:16px; left:0; right:0; height:2px; background:var(--slate-200); z-index:0; }
+.tl-item { flex: 1; padding-top: 36px; position: relative; padding-right: 16px; }
+.tl-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--navy); border: 2px solid var(--white); box-shadow: 0 0 0 2px var(--navy); position: absolute; top: 10px; left: 0; z-index: 1; }
+.tl-dot.done { background: var(--gain); box-shadow: 0 0 0 2px var(--gain); }
+.tl-dot.gold { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+.tl-phase { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.tl-title { font-size: 13px; font-weight: 600; color: var(--slate-900); margin-bottom: 6px; }
+.tl-body { font-size: 11px; color: var(--slate-600); line-height: 1.55; }
+
+/* ── Slide 10: CTA / Close ──────────────────────────── */
+.s-cta { background: var(--navy); display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 80px; text-align: center; }
+.cta-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+.cta-title { font-family: var(--font-d); font-size: 50px; font-weight: 600; color: var(--white); letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px; }
+.cta-body { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.65; max-width: 520px; margin-bottom: 44px; }
+.cta-contact { display: flex; gap: 48px; }
+.contact-item { }
+.contact-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 4px; }
+.contact-value { font-size: 14px; color: var(--white); font-weight: 500; }
+.cta-logo { margin-bottom: 36px; }
+.cta-logo img { height: 44px; filter: brightness(0) invert(1); }
+</style>
+</head>
+<body>
+<deck-stage>
+
+  <!-- ── Slide 1: Title ── -->
+  <section class="s-title" data-screen-label="01 Title">
+    <svg class="mesh-overlay" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#7DB8E8" stroke-width="0.8" fill="none" opacity="0.3">
+        <path d="M0 80 L160 50 L320 110 L480 60 L640 130 L800 70 L960 140 L1120 60 L1280 100"/>
+        <path d="M0 210 L180 170 L350 250 L520 180 L700 260 L880 185 L1060 265 L1280 210"/>
+        <path d="M0 360 L200 310 L380 390 L560 320 L740 400 L920 325 L1100 400 L1280 350"/>
+        <path d="M0 510 L190 460 L370 540 L550 470 L730 550 L910 475 L1090 545 L1280 500"/>
+        <path d="M0 650 L210 610 L400 685 L600 620 L800 695 L1000 625 L1200 690 L1280 660"/>
+        <path d="M160 50 L180 170 L200 310 L190 460 L210 610"/><path d="M320 110 L350 250 L380 390 L370 540 L400 685"/>
+        <path d="M480 60 L520 180 L560 320 L550 470 L600 620"/><path d="M640 130 L700 260 L740 400 L730 550 L800 695"/>
+        <path d="M800 70 L880 185 L920 325 L910 475 L1000 625"/><path d="M960 140 L1060 265 L1100 400 L1090 545 L1200 690"/>
+      </g>
+      <g fill="#7DB8E8" opacity="0.5">
+        <circle cx="160" cy="50" r="2.5"/><circle cx="320" cy="110" r="2.5"/><circle cx="480" cy="60" r="2.5"/>
+        <circle cx="640" cy="130" r="2.5"/><circle cx="800" cy="70" r="2.5"/><circle cx="960" cy="140" r="2.5"/>
+        <circle cx="180" cy="170" r="2.5"/><circle cx="350" cy="250" r="2.5"/><circle cx="520" cy="180" r="2.5"/>
+        <circle cx="700" cy="260" r="2.5"/><circle cx="880" cy="185" r="2.5"/><circle cx="1060" cy="265" r="2.5"/>
+      </g>
+    </svg>
+    <div class="left">
+      <div class="eyebrow">Investor presentation · 2026</div>
+      <div class="divider"></div>
+      <h1>Disciplined<br>investing for<br>the long term.</h1>
+      <div class="subtitle">Emcoin Investment provides GCC private clients with licensed, multi-asset portfolio management — from listed equities to sukuk and private mandates.</div>
+      <div class="date-line">CONFIDENTIAL · April 2026</div>
+    </div>
+    <div class="right">
+      <svg class="mesh-overlay" viewBox="0 0 460 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#7DB8E8" stroke-width="1.2" fill="none" opacity="0.2">
+          <path d="M230 100 L330 200 L280 350 L180 350 L130 200 Z"/>
+          <path d="M230 100 L230 350"/>
+          <path d="M130 200 L230 350 L330 200"/>
+          <path d="M230 100 L130 200"/><path d="M230 100 L330 200"/>
+        </g>
+        <g fill="#B0944D" opacity="0.5"><circle cx="230" cy="350" r="5"/></g>
+        <g fill="#7DB8E8" opacity="0.5">
+          <circle cx="230" cy="100" r="3"/><circle cx="330" cy="200" r="3"/><circle cx="280" cy="350" r="3"/>
+          <circle cx="180" cy="350" r="3"/><circle cx="130" cy="200" r="3"/>
+        </g>
+      </svg>
+      <img class="logo" src="../../assets/logo-emcoin-official.png" alt="Emcoin Investment">
+    </div>
+  </section>
+
+  <!-- ── Slide 2: About ── -->
+  <section class="s-about" data-screen-label="02 About">
+    <div class="slide-eyebrow">Who we are</div>
+    <h2 class="slide-h">A private investment firm built for the GCC.</h2>
+    <p class="slide-body">Established in 2018, Emcoin Investment serves a select base of private clients across the Gulf with multi-asset portfolio management. Our platform handles both market-priced instruments and manually-valued alternatives — sukuk, private equity, and fund mandates — under a single, auditable system.</p>
+    <div class="pillars-row">
+      <div class="pillar"><div class="pillar-n">01</div><div class="pillar-t">Licensed</div><div class="pillar-b">Regulated investment activities, segregated custody accounts for all client assets.</div></div>
+      <div class="pillar"><div class="pillar-n">02</div><div class="pillar-t">Multi-asset</div><div class="pillar-b">Equities, sukuk, crypto, managed funds, and private placements — one portfolio.</div></div>
+      <div class="pillar"><div class="pillar-n">03</div><div class="pillar-t">Bilingual</div><div class="pillar-b">Full Arabic and English operations; Sharia-compliant product options available.</div></div>
+      <div class="pillar"><div class="pillar-n">04</div><div class="pillar-t">Transparent</div><div class="pillar-b">Real-time client access, quarterly statements, and clearly marked price sources.</div></div>
+    </div>
+  </section>
+
+  <!-- ── Slide 3: Products ── -->
+  <section class="s-products" data-screen-label="03 Products">
+    <div class="slide-eyebrow">Investment products</div>
+    <h2 class="slide-h" style="font-size:32px; margin-bottom:0;">Five asset classes under one mandate.</h2>
+    <div class="products-grid">
+      <div class="product-card">
+        <div class="product-icon" style="background:#EEF2FB;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#163C9C" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+        <div class="product-title">Listed Equities</div>
+        <div class="product-desc">GCC and international equities. Live market pricing.</div>
+        <span class="product-tag" style="background:#EEF2FB; color:#163C9C;">API</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#FAF7F1;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6A5727" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+        <div class="product-title">Sukuk</div>
+        <div class="product-desc">Sharia-compliant fixed income. Sharia board reviewed.</div>
+        <span class="product-tag" style="background:#FAF7F1; color:#6A5727; border:1px solid #E2D7B8;">Manual</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#EFF8FF;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#175CD3" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18"/></svg></div>
+        <div class="product-title">Managed Funds</div>
+        <div class="product-desc">Pooled MENA and global mandates.</div>
+        <span class="product-tag" style="background:#EFF8FF; color:#175CD3;">Manual</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#F5F3FF;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B21B6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="product-title">Digital Assets</div>
+        <div class="product-desc">Regulated crypto access. Live pricing.</div>
+        <span class="product-tag" style="background:#F5F3FF; color:#5B21B6;">API</span>
+      </div>
+      <div class="product-card">
+        <div class="product-icon" style="background:#F6F8FA;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#344256" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="product-title">Private Equity</div>
+        <div class="product-desc">Pre-IPO and private mandates. Quarterly valuation.</div>
+        <span class="product-tag" style="background:#F6F8FA; color:#344256; border:1px solid #E1E5EB;">Manual</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 4: Big Numbers ── -->
+  <section class="s-bignum" data-screen-label="04 Numbers">
+    <div class="bignum-left" style="position:relative; z-index:1;">
+      <svg class="mesh-overlay" viewBox="0 0 640 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#7DB8E8" stroke-width="0.8" fill="none" opacity="0.2">
+          <path d="M0 100 L160 60 L320 130 L480 80 L640 120"/><path d="M0 260 L180 210 L360 290 L540 230 L640 270"/>
+          <path d="M0 420 L200 370 L400 450 L600 390 L640 420"/><path d="M0 580 L190 530 L380 610 L570 550 L640 580"/>
+          <path d="M160 60 L180 210 L200 370 L190 530"/><path d="M320 130 L360 290 L400 450 L380 610"/>
+          <path d="M480 80 L540 230 L600 390 L570 550"/>
+        </g>
+      </svg>
+      <div style="position:relative; z-index:1;">
+        <div style="font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:16px;">By the numbers</div>
+        <div style="font-family:var(--font-d); font-size:80px; font-weight:700; color:var(--white); line-height:1; letter-spacing:-0.04em; font-variant-numeric:tabular-nums; margin-bottom:12px;">SAR 48M+</div>
+        <div style="font-size:16px; color:rgba(255,255,255,0.5); margin-bottom:40px;">Assets under management</div>
+        <div style="width:48px; height:2px; background:var(--gold); border-radius:1px;"></div>
+      </div>
+    </div>
+    <div class="bignum-right">
+      <div class="stat-cell"><div class="stat-num">24</div><div class="stat-lbl">Active client accounts</div></div>
+      <div class="stat-cell"><div class="stat-num stat-gold">5</div><div class="stat-lbl">Asset classes</div></div>
+      <div class="stat-cell"><div class="stat-num">2018</div><div class="stat-lbl">Year established</div></div>
+      <div class="stat-cell"><div class="stat-num stat-gold">12</div><div class="stat-lbl">Active products</div></div>
+    </div>
+  </section>
+
+  <!-- ── Slide 5: Platform ── -->
+  <section class="s-platform" data-screen-label="05 Platform">
+    <div class="slide-eyebrow">The platform</div>
+    <h2 class="slide-h" style="font-size:32px; margin-bottom:0;">Two portals. One coherent system.</h2>
+    <div class="two-portal">
+      <div class="portal-card client">
+        <div class="portal-label">Client portal</div>
+        <div class="portal-title">Your investments, at a glance.</div>
+        <div class="feature-list">
+          <div class="feature-item"><div class="feature-dot"></div>Real-time portfolio value and unrealized P/L</div>
+          <div class="feature-item"><div class="feature-dot"></div>Holdings breakdown by instrument and asset class</div>
+          <div class="feature-item"><div class="feature-dot"></div>Quarterly statement download (PDF)</div>
+          <div class="feature-item"><div class="feature-dot"></div>Investment request submission (buy, sell, subscribe, withdraw)</div>
+          <div class="feature-item"><div class="feature-dot"></div>Read-only — no direct trade execution</div>
+        </div>
+      </div>
+      <div class="portal-card admin">
+        <div class="portal-label">Admin portal</div>
+        <div class="portal-title" style="color:var(--white);">Full back-office control.</div>
+        <div class="feature-list">
+          <div class="feature-item"><div class="feature-dot"></div>Client and account management</div>
+          <div class="feature-item"><div class="feature-dot"></div>Product catalogue and manual price updates</div>
+          <div class="feature-item"><div class="feature-dot"></div>Portfolio position assignment and editing</div>
+          <div class="feature-item"><div class="feature-dot"></div>Request approval / rejection workflow</div>
+          <div class="feature-item"><div class="feature-dot"></div>Statement upload and management</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Slide 6: Technology ── -->
+  <section class="s-tech" data-screen-label="06 Technology">
+    <div class="slide-eyebrow">Technology stack</div>
+    <h2 class="slide-h" style="font-size:32px; margin-bottom:0;">Locally hosted. Secure. Production-ready.</h2>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-layer">Frontend</div><div class="tech-title">Next.js App Router</div><div class="tech-items"><div class="tech-item">TypeScript</div><div class="tech-item">Tailwind CSS</div><div class="tech-item">Lucide React icons</div><div class="tech-item">Recharts / Chart.js</div></div></div>
+      <div class="tech-card"><div class="tech-layer">Backend</div><div class="tech-title">Node.js / Express</div><div class="tech-items"><div class="tech-item">JWT authentication</div><div class="tech-item">bcrypt password hashing</div><div class="tech-item">Role-based middleware</div><div class="tech-item">Audit logging</div></div></div>
+      <div class="tech-card"><div class="tech-layer">Data</div><div class="tech-title">SQLite / SQL.js</div><div class="tech-items"><div class="tech-item">Local database</div><div class="tech-item">Local file storage</div><div class="tech-item">Price history table</div><div class="tech-item">No external services</div></div></div>
+      <div class="tech-card"><div class="tech-layer">Deployment</div><div class="tech-title">Self-hosted VPS</div><div class="tech-items"><div class="tech-item">Fully local / on-prem</div><div class="tech-item">No Firebase / Supabase</div><div class="tech-item">PDF served via auth API</div><div class="tech-item">Role-isolated routes</div></div></div>
+    </div>
+  </section>
+
+  <!-- ── Slide 7: Quote ── -->
+  <section class="s-quote" data-screen-label="07 Quote">
+    <svg class="mesh-overlay" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#7DB8E8" stroke-width="0.8" fill="none" opacity="0.15">
+        <path d="M0 100 L180 70 L360 130 L540 80 L720 150 L900 85 L1080 155 L1280 100"/>
+        <path d="M0 300 L200 260 L400 330 L600 270 L800 340 L1000 270 L1200 335 L1280 300"/>
+        <path d="M0 500 L190 460 L390 530 L590 465 L790 535 L990 465 L1190 530 L1280 500"/>
+        <path d="M0 680 L210 650 L420 715 L630 660 L840 720 L1280 685"/>
+      </g>
+    </svg>
+    <div class="quote-mark">"</div>
+    <div class="quote-text">We manage capital with the discipline of a private bank and the transparency clients deserve — precise, regulated, and rooted in trust.</div>
+    <div class="quote-line"></div>
+    <div class="quote-attr">Emcoin Investment · Investment philosophy</div>
+  </section>
+
+  <!-- ── Slide 8: Security ── -->
+  <section class="s-security" data-screen-label="08 Security">
+    <div class="slide-eyebrow">Security & compliance</div>
+    <h2 class="slide-h" style="font-size:32px; margin-bottom:0;">Built with institutional-grade security.</h2>
+    <div class="security-grid">
+      <div class="sec-card"><div class="sec-num">JWT</div><div class="sec-title">Token authentication</div><div class="sec-body">Short-lived JWTs with role metadata. No session state stored server-side.</div></div>
+      <div class="sec-card" style="border-color:var(--gold);"><div class="sec-num" style="color:var(--gold);">RBAC</div><div class="sec-title">Role-based access</div><div class="sec-body">Clients see only their data. Admins are isolated at both API and UI layers.</div></div>
+      <div class="sec-card"><div class="sec-num">PDF</div><div class="sec-title">Authenticated files</div><div class="sec-body">Statements served through authenticated API routes — never as public static URLs.</div></div>
+      <div class="sec-card"><div class="sec-num">LOG</div><div class="sec-title">Full audit trail</div><div class="sec-body">Every price update, request change, and client modification is logged with timestamp and admin ID.</div></div>
+    </div>
+  </section>
+
+  <!-- ── Slide 9: Roadmap ── -->
+  <section class="s-roadmap" data-screen-label="09 Roadmap">
+    <div class="slide-eyebrow">Roadmap</div>
+    <h2 class="slide-h" style="font-size:32px; margin-bottom:0;">What we're building toward.</h2>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot done"></div><div class="tl-phase">Q1 2026 ✓</div><div class="tl-title">Foundation</div><div class="tl-body">Core portal (client + admin), auth, portfolio positions, manual pricing, PDF statements.</div></div>
+      <div class="tl-item"><div class="tl-dot gold"></div><div class="tl-phase">Q2 2026</div><div class="tl-title">Requests workflow</div><div class="tl-body">Full buy/sell/subscribe/withdraw lifecycle with approval states, rejection reasons, and notifications.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-phase">Q3 2026</div><div class="tl-title">Market data</div><div class="tl-body">Live price feed integration for equity and crypto products. Price history charts.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-phase">Q4 2026</div><div class="tl-title">Mobile & Arabic</div><div class="tl-body">Responsive mobile client portal with full RTL/Arabic language support.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-phase">2027</div><div class="tl-title">External reporting</div><div class="tl-body">Regulatory reporting exports, Sharia compliance module, multi-currency reporting.</div></div>
+    </div>
+  </section>
+
+  <!-- ── Slide 10: CTA / Close ── -->
+  <section class="s-cta" data-screen-label="10 Close">
+    <svg class="mesh-overlay" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#7DB8E8" stroke-width="0.8" fill="none" opacity="0.25">
+        <path d="M0 80 L160 50 L320 110 L480 60 L640 130 L800 70 L960 140 L1120 60 L1280 100"/>
+        <path d="M0 250 L180 200 L360 280 L540 210 L720 290 L900 215 L1080 290 L1280 250"/>
+        <path d="M0 430 L200 380 L400 460 L600 390 L800 465 L1000 390 L1200 460 L1280 430"/>
+        <path d="M0 610 L190 570 L390 640 L590 575 L790 645 L990 575 L1190 640 L1280 610"/>
+        <path d="M160 50 L180 200 L200 380 L190 570"/><path d="M480 60 L540 210 L600 390 L590 575"/>
+        <path d="M800 70 L900 215 L1000 390 L990 575"/><path d="M1120 60 L1080 290 L1200 460 L1190 640"/>
+      </g>
+      <g fill="#7DB8E8" opacity="0.4">
+        <circle cx="160" cy="50" r="2"/><circle cx="320" cy="110" r="2"/><circle cx="640" cy="130" r="2"/>
+        <circle cx="800" cy="70" r="2"/><circle cx="1120" cy="60" r="2"/>
+      </g>
+    </svg>
+    <div class="cta-logo"><img src="../../assets/logo-emcoin-official.png" alt="Emcoin"></div>
+    <div class="cta-eyebrow">Get in touch</div>
+    <h2 class="cta-title">Ready to invest<br>with Emcoin?</h2>
+    <p class="cta-body">Speak to our team about opening an account, or sign in to your existing client portal to review your portfolio.</p>
+    <div class="cta-contact">
+      <div class="contact-item"><div class="contact-label">Portal</div><div class="contact-value">portal.emcoin.sa</div></div>
+      <div class="contact-item"><div class="contact-label">Email</div><div class="contact-value">info@emcoin.com</div></div>
+      <div class="contact-item"><div class="contact-label">Confidential</div><div class="contact-value">April 2026</div></div>
+    </div>
+  </section>
+
+</deck-stage>
+</body>
+</html>
