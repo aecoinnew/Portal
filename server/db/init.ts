@@ -140,6 +140,9 @@ if (!approvalTableExists) {
   console.log("Phase 2: approval_requests table created.");
 }
 
+
+
+
 // --- Migration: Add must_change_password column ---
 const userCols = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
 if (!userCols.some((c) => c.name === "must_change_password")) {
@@ -147,24 +150,6 @@ if (!userCols.some((c) => c.name === "must_change_password")) {
     "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0 CHECK (must_change_password IN (0,1))"
   ).run();
   console.log("Migration: added users.must_change_password");
-}
-
-// --- Migration: Add last_login_at column ---
-const userColsLast = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
-if (!userColsLast.some((c) => c.name === "last_login_at")) {
-  db.prepare("ALTER TABLE users ADD COLUMN last_login_at TEXT").run();
-  console.log("Migration: added users.last_login_at");
-}
-
-// --- Migration: Add MFA columns ---
-const mfaCols = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
-if (!mfaCols.some((c) => c.name === "mfa_secret")) {
-  db.prepare("ALTER TABLE users ADD COLUMN mfa_secret TEXT").run();
-  console.log("Migration: added users.mfa_secret");
-}
-if (!mfaCols.some((c) => c.name === "mfa_enabled")) {
-  db.prepare("ALTER TABLE users ADD COLUMN mfa_enabled INTEGER NOT NULL DEFAULT 0 CHECK (mfa_enabled IN (0,1))").run();
-  console.log("Migration: added users.mfa_enabled");
 }
 
 // --- Migration: Expand role CHECK constraint for institutional RBAC ---
@@ -230,6 +215,25 @@ if (!hasExpandedRoles) {
 
   console.log("Migration complete: role constraint expanded to institutional roles.");
 }
+
+// --- Migration: Add last_login_at column ---
+const userColsLast = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
+if (!userColsLast.some((c) => c.name === "last_login_at")) {
+  db.prepare("ALTER TABLE users ADD COLUMN last_login_at TEXT").run();
+  console.log("Migration: added users.last_login_at");
+}
+
+// --- Migration: Add MFA columns ---
+const mfaCols = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
+if (!mfaCols.some((c) => c.name === "mfa_secret")) {
+  db.prepare("ALTER TABLE users ADD COLUMN mfa_secret TEXT").run();
+  console.log("Migration: added users.mfa_secret");
+}
+if (!mfaCols.some((c) => c.name === "mfa_enabled")) {
+  db.prepare("ALTER TABLE users ADD COLUMN mfa_enabled INTEGER NOT NULL DEFAULT 0 CHECK (mfa_enabled IN (0,1))").run();
+  console.log("Migration: added users.mfa_enabled");
+}
+
 
 // --- Existing migrations ---
 const requestColumns = db.prepare("PRAGMA table_info(investment_requests)").all() as Array<{ name: string }>;
