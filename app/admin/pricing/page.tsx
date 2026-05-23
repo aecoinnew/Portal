@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Save } from "lucide-react";
 import { ActiveBadge, ProductTypeTag } from "@/components/ui/badges";
 import { PriceHistoryChart } from "@/components/charts/price-history-chart";
@@ -102,7 +102,8 @@ export default function AdminPricingPage() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.productId}>
+                  <Fragment key={row.productId}>
+                  <tr>
                     <td className="font-medium text-slate-900">{row.productName}</td>
                     <td>
                       <ProductTypeTag type={row.type} />
@@ -139,7 +140,27 @@ export default function AdminPricingPage() {
                         <span className="text-[11px] text-slate-500">API priced</span>
                       )}
                     </td>
+                    <td>
+                      <button
+                        className="text-[11px] font-medium text-navy-700 hover:underline"
+                        onClick={() => setExpandedId(expandedId === row.productId ? null : row.productId)}
+                      >
+                        {expandedId === row.productId ? (
+                          <><ChevronUp className="inline h-3 w-3" /> Hide</>
+                        ) : (
+                          <><ChevronDown className="inline h-3 w-3" /> History</>
+                        )}
+                      </button>
+                    </td>
                   </tr>
+                  {expandedId === row.productId ? (
+                    <tr>
+                      <td colSpan={9} className="bg-slate-50 p-0">
+                        <PriceHistoryChart productId={row.productId} />
+                      </td>
+                    </tr>
+                  ) : null}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
