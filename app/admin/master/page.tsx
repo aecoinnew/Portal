@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Shield, UserPlus, KeyRound, Ban, CircleCheck, Lock } from "lucide-react";
+import { Shield, ShieldOff, UserPlus, KeyRound, Ban, CircleCheck, Lock } from "lucide-react";
 import { ErrorState, LoadingState } from "@/components/ui/state";
 import { apiRequest } from "@/lib/api/client";
 import { useAuth } from "@/contexts/auth-context";
@@ -122,6 +122,17 @@ export default function MasterAdminPage() {
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Force-change failed");
+    }
+  }
+
+  async function resetMfa(target: MasterUser) {
+    setError(null);
+    if (!confirm(`Reset MFA for ${target.email}? They will need to re-enroll on next login.`)) return;
+    try {
+      await apiRequest(`/admin/master/users/${target.id}/mfa-reset`, { method: "POST" });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "MFA reset failed");
     }
   }
 
@@ -300,6 +311,14 @@ export default function MasterAdminPage() {
                         onClick={() => void resetPassword(u)}
                       >
                         <KeyRound className="inline h-3.5 w-3.5 mr-1" />Reset pwd
+                      </button>
+                      <button
+                        className="text-[11px] font-medium text-rose-700 hover:underline"
+                        disabled={isSelf}
+                        title={isSelf ? "Use /admin/mfa-setup for your own account" : "Reset MFA (force re-enrollment on next login)"}
+                        onClick={() => void resetMfa(u)}
+                      >
+                        <ShieldOff className="inline h-3.5 w-3.5 mr-1" />Reset MFA
                       </button>
                     </td>
                   </tr>

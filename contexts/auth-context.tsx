@@ -7,11 +7,15 @@ import { clearStoredToken, getStoredToken, setStoredToken } from "@/lib/auth/sto
 import type { AuthUser, UserRole } from "@/lib/types/domain";
 import { isAdminRole } from "@/lib/types/domain";
 
+export type LoginResult =
+  | { kind: "ok"; user: AuthUser; mustChangePassword: boolean; mfaEnabled: boolean; mustEnrollMfa: boolean }
+  | { kind: "mfa_required"; email: string };
+
 type AuthContextValue = {
   user: AuthUser | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<AuthUser>;
+  login: (email: string, password: string, mfaCode?: string) => Promise<LoginResult>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 };
@@ -55,16 +59,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refreshUser();
   }, [refreshUser]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const data = await apiRequest<{ token: string; user: AuthUser }>("/auth/login", {
+  const login = useCallback(async (email: string, password: string, mfaCode?: string): Promise<LoginResult> => {
+    const data = await apiRequest<{
+      token?: string;
+      user?: AuthUser;
+      mfaRequired?: boolean;
+      email?: string;
+      mustChangePassword?: boolean;
+      mfaEnabled?: boolean;
+      mustEnrollMfa?: boolean;
+    }>("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...(mfaCode ? { mfaCode } : {}) }),
       token: null
     });
+
+    if (data.mfaRequired) {
+      return { kind: "mfa_required", email: data.email ?? email };
+    }
+    if (!data.token || !data.user) {
+      throw new Error("Login response missing token or user");
+    }
     setStoredToken(data.token);
     setToken(data.token);
     setUser(data.user);
-    return data.user;
+    return {
+      kind: "ok",
+      user: data.user,
+      mustChangePassword: Boolean(data.mustChangePassword),
+      mfaEnabled: Boolean(data.mfaEnabled),
+      mustEnrollMfa: Boolean(data.mustEnrollMfa)
+    };
   }, []);
 
   const value = useMemo(

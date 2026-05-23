@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { AlertCircle, ArrowRight, Shield, Lock } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Lock, Shield, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { roleHome, useAuth } from "@/contexts/auth-context";
+
+type Stage = "credentials" | "mfa";
 
 export default function LoginPage() {
   const { user, loading, login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
+  const [stage, setStage] = useState<Stage>("credentials");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -24,13 +28,28 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const nextUser = await login(email, password);
-      router.replace(roleHome(nextUser.role));
+      const result = await login(email, password, stage === "mfa" ? mfaCode : undefined);
+      if (result.kind === "mfa_required") {
+        setStage("mfa");
+        return;
+      }
+      // If user must enroll MFA, send them to setup before their dashboard
+      if (result.mustEnrollMfa) {
+        router.replace("/admin/mfa-setup?reason=required");
+        return;
+      }
+      router.replace(roleHome(result.user.role));
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Unable to sign in");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleBack() {
+    setStage("credentials");
+    setMfaCode("");
+    setError(null);
   }
 
   return (
@@ -41,7 +60,6 @@ export default function LoginPage() {
           <div className="absolute bottom-40 right-10 h-96 w-96 rounded-full bg-gold/10 blur-3xl" />
           <div className="absolute top-1/2 left-1/3 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
         </div>
-
         <div className="relative z-10">
           <img
             src="https://res.cloudinary.com/dfh3erwx1/image/upload/v1758619230/IMG_4560_e1o4kw.png"
@@ -49,7 +67,6 @@ export default function LoginPage() {
             className="h-20 w-auto object-contain"
           />
         </div>
-
         <div className="relative z-10">
           <h1 className="font-display text-5xl font-bold leading-tight text-white">
             Your investment
@@ -59,7 +76,6 @@ export default function LoginPage() {
           <p className="mt-8 max-w-md text-lg leading-relaxed text-white/70">
             Secure access to your Emcoin portfolio, statements, and investment requests.
           </p>
-
           <div className="mt-12 space-y-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10">
@@ -67,7 +83,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-white">Enterprise Security</p>
-                <p className="text-xs text-white/50">256-bit encryption & JWT auth</p>
+                <p className="text-xs text-white/50">256-bit encryption, MFA, JWT auth</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -81,7 +97,6 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
-
         <p className="relative z-10 text-xs leading-relaxed text-white/30">
           Emcoin Investment is a licensed investment company.
           <br />
@@ -100,8 +115,20 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Welcome back</h2>
-            <p className="mt-3 text-base text-slate-500">Sign in to your Emcoin investment portal</p>
+            {stage === "credentials" ? (
+              <>
+                <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Welcome back</h2>
+                <p className="mt-3 text-base text-slate-500">Sign in to your Emcoin investment portal</p>
+              </>
+            ) : (
+              <>
+                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-navy-50 text-navy-700">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Two-factor verification</h2>
+                <p className="mt-3 text-base text-slate-500">Enter the 6-digit code from your authenticator app.</p>
+              </>
+            )}
           </div>
 
           {error && (
@@ -112,44 +139,68 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="email">
-                Email address
-              </label>
-              <input
-                id="email"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base text-slate-900 placeholder-slate-400 transition-colors focus:border-navy-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-500/20"
-                type="email"
-                placeholder="name@company.com"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base text-slate-900 placeholder-slate-400 transition-colors focus:border-navy-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-500/20"
-                type="password"
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </div>
+            {stage === "credentials" ? (
+              <>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="email">Email address</label>
+                  <input
+                    id="email"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base text-slate-900 placeholder-slate-400 transition-colors focus:border-navy-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-500/20"
+                    type="email"
+                    placeholder="name@company.com"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="password">Password</label>
+                  <input
+                    id="password"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base text-slate-900 placeholder-slate-400 transition-colors focus:border-navy-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-500/20"
+                    type="password"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="mfaCode">Verification code</label>
+                <input
+                  id="mfaCode"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-center font-mono text-xl tracking-[0.5em] text-slate-900 placeholder-slate-300 transition-colors focus:border-navy-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-500/20"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  placeholder="000000"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  value={mfaCode}
+                  onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, ""))}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="mt-3 flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700"
+                >
+                  <ArrowLeft className="h-3 w-3" /> Back to email/password
+                </button>
+              </div>
+            )}
 
             <button
               className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-navy-700 px-6 text-base font-semibold text-white shadow-lg shadow-navy-700/25 transition-all hover:bg-navy-800 hover:shadow-xl hover:shadow-navy-700/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-              disabled={submitting}
+              disabled={submitting || (stage === "mfa" && mfaCode.length !== 6)}
               type="submit"
             >
-              {submitting ? "Signing in..." : "Sign in"}
+              {submitting ? "Signing in..." : stage === "credentials" ? "Sign in" : "Verify"}
               <ArrowRight className="h-5 w-5" />
             </button>
           </form>
