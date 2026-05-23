@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { AlertCircle, ArrowLeft, ArrowRight, Lock, Shield, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { roleHome, useAuth } from "@/contexts/auth-context";
+import { BRAND } from "@/lib/branding/config";
 
 type Stage = "credentials" | "mfa";
 
@@ -62,19 +63,19 @@ export default function LoginPage() {
         </div>
         <div className="relative z-10">
           <img
-            src="https://res.cloudinary.com/dfh3erwx1/image/upload/v1758619230/IMG_4560_e1o4kw.png"
-            alt="Emcoin Investment"
+            src={BRAND.logoDarkUrl}
+            alt={BRAND.name}
             className="h-20 w-auto object-contain"
           />
         </div>
         <div className="relative z-10">
           <h1 className="font-display text-5xl font-bold leading-tight text-white">
-            Your investment
+            {BRAND.tagline.split(" ").slice(0, -1).join(" ")}
             <br />
-            <span className="text-gold">portal.</span>
+            <span className="text-gold">{BRAND.tagline.split(" ").slice(-1)[0]}</span>
           </h1>
           <p className="mt-8 max-w-md text-lg leading-relaxed text-white/70">
-            Secure access to your Emcoin portfolio, statements, and investment requests.
+            {`Secure access to your ${BRAND.shortName} portfolio, statements, and investment requests.`}
           </p>
           <div className="mt-12 space-y-6">
             <div className="flex items-center gap-4">
@@ -98,9 +99,7 @@ export default function LoginPage() {
           </div>
         </div>
         <p className="relative z-10 text-xs leading-relaxed text-white/30">
-          Emcoin Investment is a licensed investment company.
-          <br />
-          Past performance is not indicative of future results.
+          {BRAND.legalFooter}
         </p>
       </section>
 
@@ -108,8 +107,8 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="mb-10 flex justify-center lg:hidden">
             <img
-              src="https://res.cloudinary.com/dfh3erwx1/image/upload/v1758619230/Emcoin-f-logo-tr_g1kcv0.png"
-              alt="Emcoin Investment"
+              src={BRAND.logoUrl}
+              alt={BRAND.name}
               className="h-20 w-auto object-contain sm:h-24 md:h-28"
             />
           </div>
@@ -118,7 +117,7 @@ export default function LoginPage() {
             {stage === "credentials" ? (
               <>
                 <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Welcome back</h2>
-                <p className="mt-3 text-base text-slate-500">Sign in to your Emcoin investment portal</p>
+                <p className="mt-3 text-base text-slate-500">{`Sign in to your ${BRAND.name} portal`}</p>
               </>
             ) : (
               <>

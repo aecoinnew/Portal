@@ -54,7 +54,8 @@ export function generateSecret(): string {
 
 /** Build the otpauth:// URL used by authenticator apps. */
 export function buildOtpAuthUrl(secret: string, accountName: string): string {
-  return authenticator.keyuri(accountName, "Emcoin Portal", secret);
+  const issuer = process.env.NEXT_PUBLIC_BRAND_NAME ?? "Emcoin Portal";
+  return authenticator.keyuri(accountName, issuer, secret);
 }
 
 /** Verify a TOTP code against a secret. Constant-time. */

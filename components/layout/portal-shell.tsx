@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { BRAND } from "@/lib/branding/config";
 import { cn } from "@/lib/utils/cn";
 import { initials } from "@/lib/utils/format";
 import type { UserRole } from "@/lib/types/domain";
@@ -73,8 +74,8 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
       >
         <div className={cn("border-b px-5 py-5", admin ? "border-white/10" : "border-slate-200")}>
           <img
-            src="/assets/logo-emcoin-official.png"
-            alt="Emcoin Investment"
+            src={BRAND.logoUrl}
+            alt={BRAND.name}
             className={cn("h-9 w-auto object-contain", admin && "brightness-0 invert")}
           />
         </div>
@@ -128,7 +129,7 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
 
       <div className="min-w-0 flex-1 lg:ml-[248px]">
         <header className="sticky top-0 z-20 flex min-h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:px-6">
-          <img src="/assets/logo-emcoin-official.png" alt="Emcoin Investment" className="h-8 w-auto object-contain lg:hidden" />
+          <img src={BRAND.logoUrl} alt={BRAND.name} className="h-8 w-auto object-contain lg:hidden" />
           <div className="font-display text-[16px] font-semibold text-slate-900">{admin ? `Admin ${title.toLowerCase()}` : title}</div>
           <div className="ml-auto hidden text-[12px] text-slate-500 sm:block">{timestamp}</div>
           <button className="btn btn-secondary lg:hidden" onClick={logout}>

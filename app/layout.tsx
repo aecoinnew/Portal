@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/contexts/auth-context";
 import { StagingBanner } from "@/components/ui/staging-banner";
+import { APP_TITLE, BRAND } from "@/lib/branding/config";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Emcoin Investment Portal",
-  description: "Secure local investment client portal and admin backoffice"
+  title: APP_TITLE,
+  description: BRAND.tagline
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
