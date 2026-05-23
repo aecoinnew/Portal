@@ -296,3 +296,30 @@ masterRouter.post("/users/:id/reset-password", async (req, res, next) => {
     next(error);
   }
 });
+
+// ------ Reset MFA for a user (account recovery) ------
+// Use case: user lost their authenticator device. Super_admin disables MFA so
+// the user can log in with password only, then immediately re-enroll.
+masterRouter.post("/users/:id/mfa-reset", (req, res, next) => {
+  try {
+    const me = (req as unknown as AuthedRequest).user;
+    const target = getUser(req.params.id);
+    if (!target) throw new ApiError(404, "User not found", "user_not_found");
+
+    if (target.id === me.id) {
+      throw new ApiError(403, "Use /api/auth/mfa/disable for your own account", "self_mfa_reset_forbidden");
+    }
+
+    db.prepare(
+      "UPDATE users SET mfa_secret = NULL, mfa_enabled = 0, updated_at = datetime('now') WHERE id = ?"
+    ).run(target.id);
+
+    auditLog(me, "master.user.mfa_reset", "user", target.id, {
+      requestId: requestId(req as unknown as { requestId?: string })
+    });
+
+    res.json({ user: { id: target.id, mfaEnabled: false } });
+  } catch (error) {
+    next(error);
+  }
+});

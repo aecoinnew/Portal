@@ -287,3 +287,14 @@ if (!userColsLast.some((c) => c.name === "last_login_at")) {
   db.prepare("ALTER TABLE users ADD COLUMN last_login_at TEXT").run();
   console.log("Migration: added users.last_login_at");
 }
+
+// --- Migration: Add MFA columns ---
+const mfaCols = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
+if (!mfaCols.some((c) => c.name === "mfa_secret")) {
+  db.prepare("ALTER TABLE users ADD COLUMN mfa_secret TEXT").run();
+  console.log("Migration: added users.mfa_secret");
+}
+if (!mfaCols.some((c) => c.name === "mfa_enabled")) {
+  db.prepare("ALTER TABLE users ADD COLUMN mfa_enabled INTEGER NOT NULL DEFAULT 0 CHECK (mfa_enabled IN (0,1))").run();
+  console.log("Migration: added users.mfa_enabled");
+}
