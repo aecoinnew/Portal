@@ -66,7 +66,7 @@ export default function AdminProductsPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const data = await apiRequest<ProductResponse>(editingId ? `/products/${editingId}` : "/products", {
+      const data = await apiRequest<ProductResponse & { pending?: boolean; approvalId?: string }>(editingId ? `/products/${editingId}` : "/products", {
         method: editingId ? "PATCH" : "POST",
         body: JSON.stringify({
           name,
@@ -77,10 +77,17 @@ export default function AdminProductsPage() {
           isActive
         })
       });
-      setProducts((current) => {
-        const next = editingId ? current.map((item) => (item.id === editingId ? data.product : item)) : [...current, data.product];
-        return next.sort((a, b) => a.name.localeCompare(b.name));
-      });
+      if (data.pending && data.approvalId) {
+        setPendingApprovalId(data.approvalId);
+      } else {
+        setPendingApprovalId(null);
+        if (data.product) {
+          setProducts((current) => {
+            const next = editingId ? current.map((item) => (item.id === editingId ? data.product : item)) : [...current, data.product];
+            return next.sort((a, b) => a.name.localeCompare(b.name));
+          });
+        }
+      }
       resetForm();
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Unable to save product");
@@ -90,11 +97,22 @@ export default function AdminProductsPage() {
   }
 
   async function toggleProduct(product: Product) {
-    const data = await apiRequest<ProductResponse>(`/products/${product.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ isActive: !product.isActive })
-    });
-    setProducts((current) => current.map((item) => (item.id === product.id ? data.product : item)));
+    try {
+      const data = await apiRequest<ProductResponse & { pending?: boolean; approvalId?: string }>(`/products/${product.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isActive: !product.isActive })
+      });
+      if (data.pending && data.approvalId) {
+        setPendingApprovalId(data.approvalId);
+      } else {
+        setPendingApprovalId(null);
+        if (data.product) {
+          setProducts((current) => current.map((item) => (item.id === product.id ? data.product : item)));
+        }
+      }
+    } catch (toggleError) {
+      setError(toggleError instanceof Error ? toggleError.message : "Unable to update product");
+    }
   }
 
   if (loading) return <LoadingState label="Loading products" />;
