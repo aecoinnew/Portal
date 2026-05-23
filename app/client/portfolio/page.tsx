@@ -88,7 +88,13 @@ export default function ClientPortfolioPage() {
                     <tr key={holding.positionId}>
                       <td>
                         <div className="font-medium text-slate-900">{holding.productName}</div>
-                        <div className="font-mono text-[10px] text-slate-500">{holding.symbol ?? holding.pricingMode}</div>
+                        <div className="font-mono text-[10px] text-slate-500">{holding.symbol ?? "—"}
+                          {holding.pricingMode === "api" ? (
+                            <span className="ml-1 rounded bg-blue-50 px-1 text-[9px] text-blue-600">live</span>
+                          ) : (
+                            <span className="ml-1 rounded bg-amber-50 px-1 text-[9px] text-amber-600">manual</span>
+                          )}
+                        </div>
                       </td>
                       <td>
                         <ProductTypeTag type={holding.type} />

@@ -10,7 +10,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
 import { apiRequest, downloadFromApi } from "@/lib/api/client";
 import type { PortfolioResponse, RequestsResponse, StatementsResponse } from "@/lib/types/api";
 import type { InvestmentRequest, PortfolioSummary, Statement } from "@/lib/types/domain";
-import { formatDate, formatMoney, formatNumber, formatSignedMoney, productTypeLabel, titleCase } from "@/lib/utils/format";
+import { formatDate, formatDateTime, formatMoney, formatNumber, formatSignedMoney, productTypeLabel, titleCase } from "@/lib/utils/format";
 
 export default function ClientDashboardPage() {
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
@@ -49,7 +49,16 @@ export default function ClientDashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Good afternoon.</h1>
-        <p className="mt-1 text-[13px] text-slate-500">Here is a summary of your portfolio as of today.</p>
+        <p className="mt-1 text-[13px] text-slate-500">Here is a summary of your portfolio as of today.
+            {portfolio && portfolio.holdings.length > 0 && portfolio.holdings[0].priceUpdatedAt ? (
+              <span className="ml-2 text-[11px] text-slate-400">
+                Prices as of {formatDateTime(portfolio.holdings.reduce((latest: string, h: { priceUpdatedAt?: string | null }) =>
+                  h.priceUpdatedAt && h.priceUpdatedAt > latest ? h.priceUpdatedAt : latest,
+                  portfolio.holdings[0].priceUpdatedAt ?? ""
+                ))}
+              </span>
+            ) : null}
+          </p>
       </div>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
