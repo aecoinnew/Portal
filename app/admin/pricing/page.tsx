@@ -105,7 +105,11 @@ export default function AdminPricingPage() {
                       <ProductTypeTag type={row.type} />
                     </td>
                     <td>
-                      <span className="tag bg-slate-100 text-slate-700">{titleCase(row.pricingMode)}</span>
+                      {row.pricingMode === "api" ? (
+                        <span className="tag bg-blue-50 text-blue-700">Market (auto-updated)</span>
+                      ) : (
+                        <span className="tag bg-amber-50 text-amber-700">Manual (approval-controlled)</span>
+                      )}
                     </td>
                     <td className="text-right">{formatNumber(row.price ?? 0)}</td>
                     <td>{row.currency}</td>

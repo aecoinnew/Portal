@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Plus, Save, X } from "lucide-react";
 import { ActiveBadge, ProductTypeTag } from "@/components/ui/badges";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
+import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest } from "@/lib/api/client";
 import type { ProductResponse, ProductsResponse, SettingsResponse } from "@/lib/types/api";
 import type { PricingMode, Product, ProductType, SupportedCurrency } from "@/lib/types/domain";
@@ -22,6 +23,7 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   async function load() {
     const [productsData, settingsData] = await Promise.all([
@@ -104,6 +106,7 @@ export default function AdminProductsPage() {
         <p className="mt-1 text-[13px] text-slate-500">Investment product catalog and pricing modes.</p>
       </div>
 
+      {pendingApprovalId ? <PendingApprovalBanner approvalId={pendingApprovalId} /> : null}
       {error ? <ErrorState message={error} /> : null}
 
       <section className="grid gap-4 xl:grid-cols-[360px_1fr]">

@@ -323,3 +323,62 @@ registerApprovalAction("statement.deleted", ({ entityId, executor }) => {
   auditLog(executor, "statement.deleted.executed", "statement", entityId, { userId: row.user_id });
   return { statementId: entityId, deleted: true };
 });
+
+
+// =====================================================================
+// Product configuration (pricing_mode, symbol, currency, type, is_active)
+// Phase 3 extension: sensitive product config changes require maker-checker.
+// =====================================================================
+type ProductConfigPayload = Partial<{
+  name: string;
+  symbol: string | null;
+  type: string;
+  pricingMode: string;
+  currency: string;
+  isActive: boolean;
+}>;
+
+registerApprovalAction("product.config.updated", ({ entityId, afterPayload, executor }) => {
+  const after = afterPayload as ProductConfigPayload;
+  const existing = db
+    .prepare("SELECT id FROM products WHERE id = ?")
+    .get(entityId) as { id: string } | undefined;
+  if (!existing) throw new ApiError(404, "Product not found", "product_not_found");
+
+  const updates: string[] = [];
+  const values: unknown[] = [];
+  if (after.name !== undefined) { updates.push("name = ?"); values.push(after.name); }
+  if (after.symbol !== undefined) { updates.push("symbol = ?"); values.push(after.symbol); }
+  if (after.type !== undefined) { updates.push("type = ?"); values.push(after.type); }
+  if (after.pricingMode !== undefined) { updates.push("pricing_mode = ?"); values.push(after.pricingMode); }
+  if (after.currency !== undefined) { updates.push("currency = ?"); values.push(after.currency); }
+  if (after.isActive !== undefined) { updates.push("is_active = ?"); values.push(after.isActive ? 1 : 0); }
+  if (updates.length === 0) throw new ApiError(400, "No fields to update", "no_changes");
+  updates.push("updated_at = ?"); values.push(nowIso());
+  db.prepare(`UPDATE products SET ${updates.join(", ")} WHERE id = ?`).run(...values, entityId);
+
+  auditLog(executor, "product.config.updated.executed", "product", entityId, { fields: Object.keys(after) });
+  return { productId: entityId, fields: Object.keys(after) };
+});
+
+registerApprovalAction("product.created", ({ entityId, afterPayload, executor }) => {
+  const after = afterPayload as {
+    name: string;
+    symbol: string | null;
+    type: string;
+    pricingMode: string;
+    currency: string;
+    isActive: boolean;
+  };
+  // Check for duplicate name
+  const dup = db.prepare("SELECT id FROM products WHERE name = ? AND id != ?").get(after.name, entityId);
+  if (dup) throw new ApiError(409, "Product name already exists", "product_name_exists");
+
+  db.prepare(
+    `INSERT INTO products (id, name, symbol, type, pricing_mode, currency, is_active, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(entityId, after.name, after.symbol, after.type, after.pricingMode, after.currency, after.isActive ? 1 : 0, nowIso(), nowIso());
+
+  auditLog(executor, "product.created.executed", "product", entityId, { name: after.name, pricingMode: after.pricingMode });
+  return { productId: entityId, name: after.name };
+});
