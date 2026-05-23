@@ -52,7 +52,7 @@ statementsRouter.get("/", (req, res) => {
   const filters: string[] = [];
   const values: unknown[] = [];
 
-  if (user.role !== "admin") {
+  if (user.role === "client") {
     filters.push("s.user_id = ?");
     values.push(user.id);
   } else if (clientId) {
@@ -142,7 +142,7 @@ statementsRouter.get("/:id/download", (req, res, next) => {
       .get(req.params.id) as { id: string; user_id: string; file_name: string; file_path: string } | undefined;
 
     if (!row) throw new ApiError(404, "Statement not found", "statement_not_found");
-    if (user.role !== "admin" && row.user_id !== user.id) {
+    if (user.role === "client" && row.user_id !== user.id) {
       throw new ApiError(403, "Cannot access another client's statement", "ownership_required");
     }
 

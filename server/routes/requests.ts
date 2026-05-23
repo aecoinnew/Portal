@@ -33,7 +33,7 @@ requestsRouter.get("/", (req, res) => {
   const filters: string[] = [];
   const values: unknown[] = [];
 
-  if (user.role !== "admin") {
+  if (user.role === "client") {
     filters.push("ir.user_id = ?");
     values.push(user.id);
   } else if (clientId) {
