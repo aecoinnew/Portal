@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Save } from "lucide-react";
+import { ChevronDown, ChevronUp, Save } from "lucide-react";
 import { ActiveBadge, ProductTypeTag } from "@/components/ui/badges";
+import { PriceHistoryChart } from "@/components/charts/price-history-chart";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state";
 import { PendingApprovalBanner } from "@/components/ui/pending-approval-banner";
 import { apiRequest } from "@/lib/api/client";
@@ -16,6 +17,7 @@ export default function AdminPricingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   async function load() {
@@ -95,6 +97,7 @@ export default function AdminPricingPage() {
                   <th>Last updated</th>
                   <th>Status</th>
                   <th>Manual update</th>
+                  <th>History</th>
                 </tr>
               </thead>
               <tbody>

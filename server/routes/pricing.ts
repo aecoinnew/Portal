@@ -81,3 +81,40 @@ pricingRouter.patch("/:productId", (req, res, next) => {
     next(error);
   }
 });
+
+// Phase 5B-2: price history endpoint (read-only, all admin roles)
+pricingRouter.get("/:productId/history", (req, res, next) => {
+  try {
+    const limitParam = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : 50;
+    const limit = Math.min(Math.max(isNaN(limitParam) ? 50 : limitParam, 1), 500);
+
+    const product = db
+      .prepare("SELECT id, name, symbol, pricing_mode, currency FROM products WHERE id = ?")
+      .get(req.params.productId) as { id: string; name: string; symbol: string | null; pricing_mode: string; currency: string } | undefined;
+    if (!product) throw new ApiError(404, "Product not found", "product_not_found");
+
+    const rows = db
+      .prepare(
+        `SELECT id, price, source, created_at AS createdAt
+         FROM product_price_history
+         WHERE product_id = ?
+         ORDER BY created_at DESC
+         LIMIT ?`
+      )
+      .all(product.id, limit) as Array<{ id: string; price: number; source: string; createdAt: string }>;
+
+    res.json({
+      product: {
+        id: product.id,
+        name: product.name,
+        symbol: product.symbol,
+        pricingMode: product.pricing_mode,
+        currency: product.currency
+      },
+      history: rows
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
