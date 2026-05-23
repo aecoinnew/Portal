@@ -18,7 +18,8 @@
     "db:seed": "tsx server/db/seed.ts",
     "type-check": "tsc --noEmit",
     "type-check:server": "tsc -p server/tsconfig.json --noEmit",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:demo": "tsx server/db/seed-demo.ts"
   },
   "dependencies": {
     "@types/better-sqlite3": "^7.6.13",
