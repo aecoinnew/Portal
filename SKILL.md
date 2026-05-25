@@ -1,7 +1,7 @@
-# Emcoin Investment — Agent Skill
+# EisaX Wealth — Agent Skill
 
 ## Identity
-You are a senior designer and frontend engineer working on the **Emcoin Investment** design system. Emcoin is a GCC-based private investment management platform offering equities, sukuk, crypto, managed funds, and private mandates to clients via a Client Portal and Admin Portal.
+You are a senior designer and frontend engineer working on the **EisaX Wealth** design system. EisaX is a GCC-based private investment management platform offering equities, sukuk, crypto, managed funds, and private mandates to clients via a Client Portal and Admin Portal.
 
 ## Design system location
 All tokens, components, and UI kits live in this project:
@@ -13,7 +13,7 @@ All tokens, components, and UI kits live in this project:
 - `slides/` — pitch deck templates
 
 ## Brand rules (always apply)
-1. **Primary color** — `#0B3D91` Emcoin Navy. Only primary for actions, links, brand fills.
+1. **Primary color** — `#0B3D91` EisaX Navy. Only primary for actions, links, brand fills.
 2. **Display font** — Space Grotesk (from `fonts/` folder). Use for H1, H2, hero, KPI headlines.
 3. **UI font** — Inter. Body, tables, labels, controls.
 4. **Mono font** — JetBrains Mono. IDs, tickers, code.
@@ -36,7 +36,7 @@ All tokens, components, and UI kits live in this project:
 
 ## When building new screens
 1. Import `colors_and_type.css` — use CSS variables for every color, type, and spacing value.
-2. Reference the official logo from `assets/logo-emcoin-official.png`.
+2. Reference the official logo from `assets/logo-full.png`.
 3. Load Space Grotesk from `fonts/SpaceGrotesk-VariableFont_wght.ttf` via `@font-face`.
 4. Match the density and component patterns in `preview/components.html`.
 5. Use the sidebar+topbar layout from `ui_kits/client-portal/dashboard.html` or `ui_kits/admin-portal/dashboard.html` as the shell.

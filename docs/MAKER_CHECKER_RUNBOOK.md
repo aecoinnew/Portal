@@ -1,7 +1,7 @@
 # Maker-Checker Runbook
 
 ## Scope
-Sensitive admin actions in Emcoin Portal cannot be applied by a single person.
+Sensitive admin actions in EisaX Wealth Portal cannot be applied by a single person.
 Every change goes through three steps: submit, approve, execute. The same
 person cannot approve or execute their own submission.
 

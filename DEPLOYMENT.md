@@ -1,4 +1,4 @@
-# Emcoin Investment Portal - Production Deployment
+# EisaX Wealth Portal - Production Deployment
 
 ## Current Production State
 

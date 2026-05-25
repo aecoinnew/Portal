@@ -14,7 +14,7 @@ export default function AdminClientsPage() {
   const [clients, setClients] = useState<ClientUser[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("Emcoin#2026");
+  const [password, setPassword] = useState("EisaX#2026");
   const [role, setRole] = useState<UserRole>("client");
   const [phone, setPhone] = useState("");
   const [relationshipManager, setRelationshipManager] = useState("");
@@ -39,7 +39,7 @@ export default function AdminClientsPage() {
   function resetForm() {
     setName("");
     setEmail("");
-    setPassword("Emcoin#2026");
+    setPassword("EisaX#2026");
     setRole("client");
     setStatusValue("active");
     setPhone("");

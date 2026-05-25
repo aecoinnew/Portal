@@ -5,11 +5,11 @@
  * inlines them into the client bundle). To change branding after a build,
  * rebuild the app with the new values.
  *
- * Defaults are the original Emcoin brand for backward compatibility.
+ * Defaults are the EisaX Wealth brand.
  */
 export const BRAND = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "Emcoin Investment",
-  shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME ?? "Emcoin",
+  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "EisaX Wealth",
+  shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME ?? "EisaX",
   tagline: process.env.NEXT_PUBLIC_BRAND_TAGLINE ?? "Your investment portal.",
   logoUrl: process.env.NEXT_PUBLIC_BRAND_LOGO_URL ?? "/assets/logo-full.png",
   logoDarkUrl: process.env.NEXT_PUBLIC_BRAND_LOGO_DARK_URL ?? process.env.NEXT_PUBLIC_BRAND_LOGO_URL ?? "/assets/logo-full.png",
@@ -17,7 +17,7 @@ export const BRAND = {
   accentColor: process.env.NEXT_PUBLIC_BRAND_ACCENT_COLOR ?? "#B0944D",
   legalFooter:
     process.env.NEXT_PUBLIC_BRAND_LEGAL_FOOTER ??
-    "Emcoin Investment is a licensed investment company. Past performance is not indicative of future results."
+    "EisaX Wealth is a licensed investment company. Past performance is not indicative of future results."
 };
 
 export const APP_TITLE = `${BRAND.name} Portal`;
