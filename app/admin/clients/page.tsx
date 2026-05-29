@@ -147,7 +147,7 @@ export default function AdminClientsPage() {
                 <label className="label" htmlFor="client-password">
                   Password
                 </label>
-                <input id="client-password" className="input" value={password} onChange={(event) => setPassword(event.target.value)} required={!editingId} placeholder={editingId ? "Leave blank" : ""} />
+                <input id="client-password" className="input" value={password} onChange={(event) => setPassword(event.target.value)} required={!editingId} placeholder={editingId ? "Leave blank to keep current" : "Set an initial password"} />
               </div>
               <div>
                 <label className="label" htmlFor="client-role">

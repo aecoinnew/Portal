@@ -1,10 +1,11 @@
 import bcrypt from "bcrypt";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { db, nowIso, statementsDir, uid } from "./connection.js";
 import "./init.js";
 
-const password = "Emcoin#2026";
+const password = process.env.SEED_PASSWORD || crypto.randomBytes(12).toString("base64url");
 const hash = bcrypt.hashSync(password, 12);
 const now = nowIso();
 

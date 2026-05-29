@@ -12,7 +12,7 @@
 | Scripts | `/opt/emcoin/scripts/` |
 | Nginx config | `/etc/nginx/sites-available/emcoin` |
 | PM2 config | `/opt/emcoin/app/ecosystem.config.js` |
-| Public URL | `http://141.145.144.119` |
+| Public URL | `http://YOUR_SERVER_IP` |
 | API (internal) | `127.0.0.1:4000` |
 | Web (internal) | `127.0.0.1:3000` |
 
@@ -64,8 +64,8 @@ pm2 restart all
 # 6. Verify
 curl -s http://127.0.0.1:4000/api/health
 curl -s http://127.0.0.1:3000/login
-curl -s http://141.145.144.119/api/health
-curl -s http://141.145.144.119/login
+curl -s http://YOUR_SERVER_IP/api/health
+curl -s http://YOUR_SERVER_IP/login
 ```
 
 ## Backup & Restore
@@ -189,7 +189,7 @@ When a domain is available:
 
 ### 1. Update DNS
 
-Point your domain (e.g., `portal.example.com`) to `141.145.144.119`.
+Point your domain (e.g., `portal.example.com`) to `YOUR_SERVER_IP`.
 
 ### 2. Update .env
 
