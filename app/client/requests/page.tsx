@@ -8,17 +8,18 @@ import { apiRequest } from "@/lib/api/client";
 import type { ProductsResponse, RequestResponse, RequestsResponse, SettingsResponse } from "@/lib/types/api";
 import type { InvestmentRequest, Product, RequestType, SupportedCurrency } from "@/lib/types/domain";
 import { formatDate, formatMoney, titleCase } from "@/lib/utils/format";
-
-const TYPE_HINTS: Record<RequestType, string> = {
-  buy: "Buy a specific instrument. Select the product and the AED/USD amount you want to invest.",
-  sell: "Sell from an existing position. Select the product and the AED/USD amount you want to liquidate.",
-  subscribe: "Subscribe to a fund or product offering. Select the product and the subscription amount.",
-  withdraw: "Cash withdrawal from your account. No product needed; just specify the amount."
-};
+import { useI18n } from "@/contexts/i18n-context";
 
 const PRODUCT_REQUIRED_TYPES: RequestType[] = ["buy", "sell", "subscribe"];
 
 export default function ClientRequestsPage() {
+  const { t } = useI18n();
+  const TYPE_HINTS: Record<RequestType, string> = {
+    buy: t("req.hintBuy"),
+    sell: t("req.hintSell"),
+    subscribe: t("req.hintSubscribe"),
+    withdraw: t("req.hintWithdraw")
+  };
   const [requests, setRequests] = useState<InvestmentRequest[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [type, setType] = useState<RequestType>("buy");
@@ -96,22 +97,16 @@ export default function ClientRequestsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="page-title">Requests</h1>
-        <p className="mt-1 text-[13px] text-slate-500">Investment instructions and servicing requests.</p>
+        <h1 className="page-title">{t("req.title")}</h1>
+        <p className="mt-1 text-[13px] text-slate-500">{t("req.subtitle")}</p>
       </div>
 
       {/* Workflow context */}
       <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[12px] text-slate-700">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-navy-700" />
         <div>
-          <div className="font-medium text-slate-900">How requests work</div>
-          <div className="mt-1 text-slate-600">
-            Submitted requests enter our review workflow. They progress through{" "}
-            <span className="font-medium">pending</span> &rarr;{" "}
-            <span className="font-medium">approved</span> &rarr;{" "}
-            <span className="font-medium">executed</span>, or may be{" "}
-            <span className="font-medium">rejected</span> with a reason. You will see status changes here as they happen.
-          </div>
+          <div className="font-medium text-slate-900">{t("req.howTitle")}</div>
+          <div className="mt-1 text-slate-600">{t("req.howBody")}</div>
         </div>
       </div>
 
@@ -120,29 +115,29 @@ export default function ClientRequestsPage() {
         <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[12px] text-emerald-900">
           <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>{success}</div>
-          <button className="ml-auto text-emerald-700 hover:underline" onClick={() => setSuccess(null)}>Dismiss</button>
+          <button className="ml-auto text-emerald-700 hover:underline" onClick={() => setSuccess(null)}>{t("common.dismiss")}</button>
         </div>
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[380px_1fr]">
         <form className="card h-fit" onSubmit={handleSubmit}>
           <div className="card-header">
-            <div className="card-title">Submit request</div>
+            <div className="card-title">{t("req.submit")}</div>
           </div>
           <div className="grid gap-4 p-5">
             <div>
-              <label className="label" htmlFor="request-type">Type</label>
+              <label className="label" htmlFor="request-type">{t("req.fieldType")}</label>
               <select id="request-type" className="select" value={type} onChange={(event) => setType(event.target.value as RequestType)}>
-                <option value="buy">Buy</option>
-                <option value="sell">Sell</option>
-                <option value="subscribe">Subscribe</option>
-                <option value="withdraw">Withdraw cash</option>
+                <option value="buy">{t("req.buy")}</option>
+                <option value="sell">{t("req.sell")}</option>
+                <option value="subscribe">{t("req.subscribe")}</option>
+                <option value="withdraw">{t("req.withdraw")}</option>
               </select>
               <div className="mt-1 text-[11px] text-slate-500">{TYPE_HINTS[type]}</div>
             </div>
             <div>
               <label className="label" htmlFor="request-product">
-                Product {productRequired ? <span className="text-rose-600">*</span> : <span className="text-slate-400">(optional)</span>}
+                {t("req.fieldProduct")} {productRequired ? <span className="text-rose-600">*</span> : <span className="text-slate-400">{t("req.optional")}</span>}
               </label>
               <select
                 id="request-product"
@@ -152,7 +147,7 @@ export default function ClientRequestsPage() {
                 required={productRequired}
                 disabled={type === "withdraw"}
               >
-                <option value="">{type === "withdraw" ? "Not applicable" : "Select a product"}</option>
+                <option value="">{type === "withdraw" ? t("req.notApplicable") : t("req.selectProduct")}</option>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
                     {product.name}
@@ -161,7 +156,7 @@ export default function ClientRequestsPage() {
               </select>
             </div>
             <div>
-              <label className="label" htmlFor="request-amount">Amount <span className="text-rose-600">*</span></label>
+              <label className="label" htmlFor="request-amount">{t("req.fieldAmount")} <span className="text-rose-600">*</span></label>
               <div className="grid grid-cols-[1fr_92px] gap-2">
                 <input
                   id="request-amount"
@@ -181,40 +176,40 @@ export default function ClientRequestsPage() {
               </div>
             </div>
             <div>
-              <label className="label" htmlFor="request-message">Message <span className="text-slate-400">(optional)</span></label>
+              <label className="label" htmlFor="request-message">{t("req.fieldMessage")} <span className="text-slate-400">{t("req.optional")}</span></label>
               <textarea
                 id="request-message"
                 className="textarea"
                 rows={3}
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
-                placeholder="Any context for the reviewing team..."
+                placeholder={t("req.messagePlaceholder")}
                 maxLength={2000}
               />
               <div className="mt-1 text-[11px] text-slate-400">{message.length}/2000</div>
             </div>
             <button className="btn btn-primary" disabled={submitting} type="submit">
               <Send className="h-4 w-4" />
-              {submitting ? "Submitting..." : "Submit request"}
+              {submitting ? t("req.submitting") : t("req.submit")}
             </button>
           </div>
         </form>
 
         <div className="card">
           <div className="card-header">
-            <div className="card-title">Request history ({requests.length})</div>
+            <div className="card-title">{t("req.history")} ({requests.length})</div>
           </div>
           {requests.length ? (
             <div className="table-wrap">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Type</th>
-                    <th>Product</th>
-                    <th className="text-right">Amount</th>
-                    <th>Status</th>
-                    <th>Submitted</th>
-                    <th>Notes</th>
+                    <th>{t("tbl.type")}</th>
+                    <th>{t("tbl.product")}</th>
+                    <th className="text-right">{t("tbl.amount")}</th>
+                    <th>{t("tbl.status")}</th>
+                    <th>{t("tbl.submitted")}</th>
+                    <th>{t("tbl.notes")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -227,7 +222,7 @@ export default function ClientRequestsPage() {
                         </td>
                         <td>
                           <div className="flex items-center gap-2">
-                            <span>{request.productName ?? "Cash"}</span>
+                            <span>{request.productName ?? t("common.cash")}</span>
                             {product ? <ProductTypeTag type={product.type} /> : null}
                           </div>
                         </td>
@@ -241,7 +236,7 @@ export default function ClientRequestsPage() {
                           {request.status === "rejected" && request.rejectionReason ? (
                             <div className="mt-1 flex items-start gap-1 text-[11px] text-rose-700">
                               <XCircle className="mt-0.5 h-3 w-3 shrink-0" />
-                              <span><span className="font-medium">Reason:</span> {request.rejectionReason}</span>
+                              <span><span className="font-medium">{t("req.reason")}</span> {request.rejectionReason}</span>
                             </div>
                           ) : null}
                           {!request.message && !(request.status === "rejected" && request.rejectionReason) ? (
@@ -255,7 +250,7 @@ export default function ClientRequestsPage() {
               </table>
             </div>
           ) : (
-            <EmptyState title="No requests submitted yet" />
+            <EmptyState title={t("req.none")} />
           )}
         </div>
       </section>

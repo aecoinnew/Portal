@@ -36,8 +36,9 @@ export type AuthedRequest = Request & {
 
 // Privileged roles must have MFA enabled. Until they enroll, their token is
 // accepted ONLY for the endpoints needed to enroll (and to read identity / log out).
+// NOTE: super_admin is intentionally excluded from forced enrollment so the
+// master account cannot lock itself out; MFA remains available but optional for it.
 const PRIVILEGED_ROLES = new Set<string>([
-  "super_admin",
   "admin",
   "operations",
   "relationship_manager",

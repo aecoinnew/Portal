@@ -11,6 +11,7 @@ import {
   LogOut,
   Moon,
   Package,
+  ScrollText,
   Settings,
   ShieldCheck,
   Sun,
@@ -23,6 +24,7 @@ import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useTheme } from "@/contexts/theme-context";
 import { useI18n } from "@/contexts/i18n-context";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { BRAND } from "@/lib/branding/config";
 import { cn } from "@/lib/utils/cn";
 import { initials } from "@/lib/utils/format";
@@ -55,6 +57,8 @@ const adminNav: NavItem[] = [
   { href: "/admin/settings", labelKey: "nav.settings", icon: Settings }
 ];
 
+const AUDIT_VIEW_ROLES = ["super_admin", "admin", "compliance", "auditor"];
+
 export function PortalShell({ role, children }: { role: UserRole; children: ReactNode }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -62,10 +66,13 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
   const pathname = usePathname();
   const admin = role === "admin";
   const isSuperAdmin = user?.role === "super_admin";
+  const canViewAudit = user ? AUDIT_VIEW_ROLES.includes(user.role) : false;
   const nav = admin
-    ? isSuperAdmin
-      ? [...adminNav, { href: "/admin/master", labelKey: "nav.master", icon: UserRoundCog }]
-      : adminNav
+    ? [
+        ...adminNav,
+        ...(canViewAudit ? [{ href: "/admin/audit", labelKey: "nav.audit", icon: ScrollText }] : []),
+        ...(isSuperAdmin ? [{ href: "/admin/master", labelKey: "nav.master", icon: UserRoundCog }] : [])
+      ]
     : clientNav;
   const active = nav.find((item) => pathname.startsWith(item.href));
   const title = active ? t(active.labelKey) : admin ? t("nav.backoffice") : t("nav.portfolioSection");
@@ -145,6 +152,7 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
           <img src={BRAND.logoUrl} alt={BRAND.name} className="h-8 w-auto object-contain lg:hidden" />
           <div className="font-display text-[16px] font-semibold text-slate-900">{title}</div>
           <div className="ms-auto hidden text-[12px] text-slate-500 sm:block">{timestamp}</div>
+          {admin ? <NotificationBell /> : null}
           <button
             className="rounded-md px-2 py-1.5 text-[12px] font-semibold text-slate-500 transition hover:bg-slate-100"
             onClick={toggleLocale}

@@ -18,6 +18,8 @@ import { requestsRouter } from "./routes/requests.js";
 import { settingsRouter } from "./routes/settings.js";
 import { statementsRouter } from "./routes/statements.js";
 import { assistantRouter } from "./routes/assistant.js";
+import { auditRouter } from "./routes/audit.js";
+import { notificationsRouter } from "./routes/notifications.js";
 
 dotenv.config();
 
@@ -76,6 +78,8 @@ export function createApp() {
   app.use("/api/settings", settingsRouter);
   app.use("/api/statements", statementsRouter);
   app.use("/api/assistant", assistantRouter);
+  app.use("/api/audit", auditRouter);
+  app.use("/api/notifications", notificationsRouter);
   app.use(notFound);
   app.use(errorHandler);
 
