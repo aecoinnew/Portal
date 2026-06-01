@@ -3,6 +3,12 @@ import type { ApiErrorBody } from "@/lib/types/domain";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
+// Exposed for streaming consumers (SSE) that can't use the JSON helper above.
+export function apiBaseUrl() {
+  return apiUrl;
+}
+export { getStoredToken } from "@/lib/auth/storage";
+
 export class ApiClientError extends Error {
   status: number;
   code?: string;

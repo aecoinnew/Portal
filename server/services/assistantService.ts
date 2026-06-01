@@ -246,6 +246,126 @@ export async function askAssistant(params: AskParams): Promise<{ reply: string }
 }
 
 // ---------------------------------------------------------------------------
+// Streaming variant: invokes onDelta for each token chunk and resolves with
+// the full reply once complete. Logs the interaction at the end (ok or error).
+// ---------------------------------------------------------------------------
+type AskStreamParams = AskParams & {
+  onDelta: (chunk: string) => void;
+  signal?: AbortSignal;
+};
+
+export async function askAssistantStream(params: AskStreamParams): Promise<{ reply: string }> {
+  const cfg = getAssistantConfig();
+  if (!cfg.enabled) {
+    throw new AssistantDisabledError("assistant disabled");
+  }
+
+  const apiKey = process.env.ASSISTANT_API_KEY || process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
+    logInteraction({
+      userId: params.userId,
+      userRole: params.userRole,
+      question: params.message,
+      answer: null,
+      model: cfg.model,
+      status: "error",
+      error: "missing_api_key"
+    });
+    throw new AssistantNotConfiguredError("missing api key");
+  }
+
+  const messages = [
+    { role: "system" as const, content: cfg.systemPrompt },
+    ...params.history.slice(-12).map((t) => ({ role: t.role, content: t.content })),
+    { role: "user" as const, content: params.message }
+  ];
+
+  let reply = "";
+
+  try {
+    const resp = await fetch(`${cfg.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        max_tokens: cfg.maxTokens,
+        temperature: cfg.temperature,
+        stream: true
+      }),
+      signal: params.signal ?? AbortSignal.timeout(60000)
+    });
+
+    if (!resp.ok || !resp.body) {
+      const detail = resp.ok ? "no body" : await resp.text().catch(() => "");
+      throw new Error(`upstream ${resp.status}: ${String(detail).slice(0, 300)}`);
+    }
+
+    // Parse the OpenAI-compatible SSE stream: lines like `data: {json}` and `data: [DONE]`.
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (payload === "[DONE]") continue;
+        try {
+          const json = JSON.parse(payload) as {
+            choices?: Array<{ delta?: { content?: string } }>;
+          };
+          const delta = json?.choices?.[0]?.delta?.content;
+          if (delta) {
+            reply += delta;
+            params.onDelta(delta);
+          }
+        } catch {
+          // ignore keep-alive / partial lines
+        }
+      }
+    }
+
+    if (!reply.trim()) {
+      throw new Error("empty completion");
+    }
+  } catch (err) {
+    logInteraction({
+      userId: params.userId,
+      userRole: params.userRole,
+      question: params.message,
+      answer: null,
+      model: cfg.model,
+      status: "error",
+      error: err instanceof Error ? err.message.slice(0, 500) : "unknown_error"
+    });
+    throw new Error("assistant_upstream_failed");
+  }
+
+  logInteraction({
+    userId: params.userId,
+    userRole: params.userRole,
+    question: params.message,
+    answer: reply.trim(),
+    model: cfg.model,
+    status: "ok"
+  });
+
+  return { reply: reply.trim() };
+}
+
+// ---------------------------------------------------------------------------
 // Logging
 // ---------------------------------------------------------------------------
 type LogParams = {

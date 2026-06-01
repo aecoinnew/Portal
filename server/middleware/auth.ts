@@ -27,11 +27,38 @@ type UserRow = {
   email: string;
   role: UserRole;
   status: "active" | "suspended";
+  mfa_enabled: number;
 };
 
 export type AuthedRequest = Request & {
   user: AuthUser;
 };
+
+// Privileged roles must have MFA enabled. Until they enroll, their token is
+// accepted ONLY for the endpoints needed to enroll (and to read identity / log out).
+const PRIVILEGED_ROLES = new Set<string>([
+  "super_admin",
+  "admin",
+  "operations",
+  "relationship_manager",
+  "compliance",
+  "finance",
+  "auditor"
+]);
+
+// Paths (relative to the router mount) that an un-enrolled privileged user may hit.
+// These are matched against req.path which already excludes the /api prefix only
+// inside routers; in the global middleware we match the full originalUrl path.
+const MFA_ENROLL_EXEMPT = [
+  "/api/auth/me",
+  "/api/auth/refresh",
+  "/api/auth/mfa/setup",
+  "/api/auth/mfa/verify",
+  "/api/auth/mfa/state",
+  "/api/auth/logout",
+  "/api/auth/change-password",
+  "/api/health"
+];
 
 export function authenticate(req: Request, _res: Response, next: NextFunction) {
   const header = req.header("authorization");
@@ -44,7 +71,7 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
   try {
     const decoded = jwtPayloadSchema.parse(jwt.verify(token, jwtSecret()));
     const row = db
-      .prepare("SELECT id, name, email, role, status FROM users WHERE id = ?")
+      .prepare("SELECT id, name, email, role, status, mfa_enabled FROM users WHERE id = ?")
       .get(decoded.sub) as UserRow | undefined;
 
     if (!row) {
@@ -62,6 +89,23 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
       role: row.role,
       status: row.status
     };
+
+    // Enforce MFA enrollment for privileged roles. An un-enrolled privileged
+    // user may only reach the enrollment/identity endpoints; everything else
+    // is blocked so the second factor cannot be skipped.
+    if (PRIVILEGED_ROLES.has(row.role) && row.mfa_enabled !== 1) {
+      const path = req.originalUrl.split("?")[0];
+      const exempt = MFA_ENROLL_EXEMPT.some((p) => path === p || path.startsWith(p + "/"));
+      if (!exempt) {
+        return next(
+          new ApiError(
+            403,
+            "Multi-factor authentication enrollment is required before continuing.",
+            "mfa_enrollment_required"
+          )
+        );
+      }
+    }
 
     return next();
   } catch {

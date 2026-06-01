@@ -214,3 +214,136 @@ textarea {
     @apply h-1 w-1 rounded-full bg-current;
   }
 }
+
+/* ===================================================================
+   Dark theme — overrides design-system CSS variables.
+   Activated by [data-theme="dark"] on <html>. Because all components
+   consume these variables, they adapt automatically.
+   =================================================================== */
+[data-theme="dark"] {
+  --slate-25: #0d1521;
+  --slate-50: #0f1828;
+  --slate-100: #16202f;
+  --slate-200: #243143;
+  --slate-300: #33445b;
+  --slate-400: #5b6b80;
+  --slate-500: #8c98a8;
+  --slate-600: #aab4c2;
+  --slate-700: #c7ced8;
+  --slate-800: #e2e6ec;
+  --slate-900: #f3f5f8;
+
+  --bg-app: #0b1220;
+  --bg-surface: #131c2b;
+  --bg-surface-2: #16202f;
+  --bg-surface-3: #1c2738;
+
+  --fg-1: #f3f5f8;
+  --fg-2: #c7ced8;
+  --fg-3: #8c98a8;
+  --fg-4: #5b6b80;
+
+  --border-subtle: #243143;
+  --border-default: #33445b;
+
+  --accent-primary: #4d6cc1;
+  --accent-primary-hover: #7a93d6;
+  --accent-primary-soft: #16202f;
+}
+
+/* Surfaces that hardcode white/slate utility classes need a nudge in dark. */
+[data-theme="dark"] .card,
+[data-theme="dark"] .input,
+[data-theme="dark"] .select,
+[data-theme="dark"] .textarea,
+[data-theme="dark"] .btn-secondary,
+[data-theme="dark"] .btn-danger {
+  background-color: var(--bg-surface);
+}
+
+[data-theme="dark"] .table th {
+  background-color: var(--bg-surface-2);
+}
+
+[data-theme="dark"] .table td {
+  border-color: var(--border-subtle);
+}
+
+[data-theme="dark"] .btn-secondary:hover,
+[data-theme="dark"] .btn-danger:hover {
+  background-color: var(--bg-surface-3);
+}
+
+[data-theme="dark"] body {
+  background: var(--bg-app);
+  color: var(--fg-1);
+}
+
+/* Smooth the switch */
+html,
+body,
+.card,
+.input,
+.select,
+.textarea,
+.btn {
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+
+/* Structural shell elements that use hardcoded Tailwind utilities.
+   In dark mode, remap them to themed surfaces. Scoped to [data-theme="dark"]. */
+[data-theme="dark"] .bg-white {
+  background-color: var(--bg-surface) !important;
+}
+[data-theme="dark"] .bg-slate-50 {
+  background-color: var(--bg-app) !important;
+}
+[data-theme="dark"] .border-slate-200 {
+  border-color: var(--border-subtle) !important;
+}
+[data-theme="dark"] .text-slate-900 {
+  color: var(--fg-1) !important;
+}
+[data-theme="dark"] .text-slate-700 {
+  color: var(--fg-2) !important;
+}
+[data-theme="dark"] .text-slate-600,
+[data-theme="dark"] .text-slate-500 {
+  color: var(--fg-3) !important;
+}
+[data-theme="dark"] .hover\:bg-slate-50:hover,
+[data-theme="dark"] .hover\:bg-slate-100:hover {
+  background-color: var(--bg-surface-3) !important;
+}
+[data-theme="dark"] .hover\:bg-slate-200:hover {
+  background-color: var(--bg-surface-3) !important;
+}
+/* Keep the admin navy sidebar as-is (it already reads well on dark). */
+
+/* ===================================================================
+   RTL support. The portal shell uses a fixed left sidebar with a left
+   margin on the content. In RTL we mirror those to the right.
+   =================================================================== */
+[dir="rtl"] aside.fixed.left-0 {
+  left: auto;
+  right: 0;
+}
+
+@media (min-width: 1024px) {
+  [dir="rtl"] .lg\:ml-\[248px\] {
+    margin-left: 0;
+    margin-right: 248px;
+  }
+}
+
+/* Border side flip for the sidebar divider */
+[dir="rtl"] aside.border-r {
+  border-right: 0;
+  border-left: 1px solid var(--border-subtle);
+}
+
+/* Arabic reads better with slightly more line-height for UI text */
+[dir="rtl"] body {
+  line-height: 1.6;
+}

@@ -285,6 +285,11 @@ masterRouter.post("/users/:id/reset-password", async (req, res, next) => {
       requestId: requestId(req as unknown as { requestId?: string })
     });
 
+    // Auto-resolve any pending self-service reset request for this user.
+    db.prepare(
+      "UPDATE password_reset_requests SET status = 'resolved', resolved_at = datetime('now'), resolved_by = ? WHERE user_id = ? AND status = 'pending'"
+    ).run(me.id, target.id);
+
     // tempPassword is never logged or persisted anywhere except as the bcrypt hash above.
     res.json({
       user: { id: target.id, mustChangePassword: true },
@@ -319,6 +324,66 @@ masterRouter.post("/users/:id/mfa-reset", (req, res, next) => {
     });
 
     res.json({ user: { id: target.id, mfaEnabled: false } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ------ Password reset requests (self-service "forgot password" inbox) ------
+// Clients/users who can't log in submit a request from the login page; it lands
+// here for a super_admin to action via the reset-password endpoint above.
+masterRouter.get("/reset-requests", (req, res) => {
+  const status = typeof req.query.status === "string" ? req.query.status : "pending";
+  const allowed = ["pending", "resolved", "dismissed", "all"];
+  const filter = allowed.includes(status) ? status : "pending";
+
+  const where = filter === "all" ? "" : "WHERE r.status = ?";
+  const stmt = db.prepare(
+    `SELECT r.id, r.email, r.user_id, r.status, r.note, r.created_at, r.resolved_at,
+            u.name AS user_name, u.role AS user_role, u.status AS user_status
+     FROM password_reset_requests r
+     LEFT JOIN users u ON u.id = r.user_id
+     ${where}
+     ORDER BY r.created_at DESC
+     LIMIT 200`
+  );
+  const rows = (filter === "all" ? stmt.all() : stmt.all(filter)) as Array<Record<string, unknown>>;
+
+  res.json({
+    requests: rows.map((r) => ({
+      id: r.id,
+      email: r.email,
+      userId: r.user_id,
+      userName: r.user_name ?? null,
+      userRole: r.user_role ?? null,
+      userStatus: r.user_status ?? null,
+      status: r.status,
+      note: r.note,
+      createdAt: r.created_at,
+      resolvedAt: r.resolved_at
+    }))
+  });
+});
+
+// Dismiss a request (e.g. spam / handled out of band) without resetting.
+masterRouter.post("/reset-requests/:id/dismiss", (req, res, next) => {
+  try {
+    const me = (req as unknown as AuthedRequest).user;
+    const row = db
+      .prepare("SELECT id, status FROM password_reset_requests WHERE id = ?")
+      .get(req.params.id) as { id: string; status: string } | undefined;
+    if (!row) throw new ApiError(404, "Request not found", "request_not_found");
+    if (row.status !== "pending") {
+      return res.json({ id: row.id, status: row.status, unchanged: true });
+    }
+    db.prepare(
+      "UPDATE password_reset_requests SET status = 'dismissed', resolved_at = datetime('now'), resolved_by = ? WHERE id = ?"
+    ).run(me.id, row.id);
+
+    auditLog(me, "master.reset_request.dismissed", "password_reset_request", row.id, {
+      requestId: requestId(req as unknown as { requestId?: string })
+    });
+    res.json({ id: row.id, status: "dismissed" });
   } catch (error) {
     next(error);
   }

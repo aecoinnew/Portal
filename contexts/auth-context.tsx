@@ -59,6 +59,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refreshUser();
   }, [refreshUser]);
 
+  // Silent session keep-alive: while logged in, periodically exchange the
+  // current token for a fresh one so an active user isn't logged out mid-session.
+  // Runs every 20 minutes; on failure it stays on the existing token.
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(
+      () => {
+        const stored = getStoredToken();
+        if (!stored) return;
+        apiRequest<{ token: string; user: AuthUser }>("/auth/refresh", {
+          method: "POST",
+          token: stored
+        })
+          .then((data) => {
+            if (data.token) {
+              setStoredToken(data.token);
+              setToken(data.token);
+              if (data.user) setUser(data.user);
+            }
+          })
+          .catch(() => {
+            /* keep existing token; a 401 will surface on the next real request */
+          });
+      },
+      20 * 60 * 1000
+    );
+    return () => clearInterval(interval);
+  }, [token]);
+
   const login = useCallback(async (email: string, password: string, mfaCode?: string): Promise<LoginResult> => {
     const data = await apiRequest<{
       token?: string;

@@ -29,6 +29,19 @@ type AssistantLog = {
   createdAt: string;
 };
 
+type AssistantStats = {
+  totals: {
+    total: number;
+    ok: number;
+    errors: number;
+    uniqueUsers: number;
+    totalTokens: number;
+    today: number;
+  };
+  last7Days: Array<{ day: string; count: number }>;
+  topUsers: Array<{ userId: string; name: string | null; email: string | null; count: number }>;
+};
+
 export function AssistantPanel() {
   const [config, setConfig] = useState<AssistantConfig | null>(null);
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
@@ -38,6 +51,7 @@ export function AssistantPanel() {
   const [notice, setNotice] = useState<string | null>(null);
   const [logs, setLogs] = useState<AssistantLog[]>([]);
   const [showLogs, setShowLogs] = useState(false);
+  const [stats, setStats] = useState<AssistantStats | null>(null);
 
   // test widget
   const [testInput, setTestInput] = useState("");
@@ -50,6 +64,12 @@ export function AssistantPanel() {
     );
     setConfig(data.config);
     setApiKeyConfigured(data.apiKeyConfigured);
+    try {
+      const s = await apiRequest<AssistantStats>("/assistant/stats");
+      setStats(s);
+    } catch {
+      /* stats are best-effort */
+    }
   }
 
   useEffect(() => {
@@ -165,6 +185,51 @@ export function AssistantPanel() {
           An explainer-only support assistant. It answers general platform and terminology
           questions. It never gives investment advice, recommendations, or predictions.
         </p>
+
+        {stats ? (
+          <div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { label: "Total messages", value: stats.totals.total },
+                { label: "Today", value: stats.totals.today },
+                { label: "Unique users", value: stats.totals.uniqueUsers },
+                { label: "Errors", value: stats.totals.errors }
+              ].map((m) => (
+                <div
+                  key={m.label}
+                  className="rounded-lg border p-3"
+                  style={{ borderColor: "var(--border-subtle)", background: "var(--bg-surface-2)" }}
+                >
+                  <div className="text-[20px] font-semibold" style={{ color: "var(--fg-1)" }}>
+                    {m.value.toLocaleString()}
+                  </div>
+                  <div className="text-[11px] muted">{m.label}</div>
+                </div>
+              ))}
+            </div>
+            {stats.totals.totalTokens > 0 ? (
+              <div className="mt-2 text-[11px] muted">
+                ~{stats.totals.totalTokens.toLocaleString()} tokens used (logged)
+              </div>
+            ) : null}
+            {stats.topUsers.length > 0 ? (
+              <div className="mt-3">
+                <div className="label">Top users (30 days)</div>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {stats.topUsers.map((u) => (
+                    <span
+                      key={u.userId}
+                      className="tag"
+                      style={{ background: "var(--bg-surface-3)", color: "var(--fg-2)" }}
+                    >
+                      {u.name ?? u.email ?? "unknown"}: {u.count}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {!apiKeyConfigured ? (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-[12px] text-amber-900">

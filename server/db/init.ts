@@ -368,3 +368,26 @@ db.exec(`
 }
 console.log("Migration: assistant_config + assistant_logs ready");
 
+// =====================================================================
+// Password reset requests. No SMTP on this deployment, so "forgot password"
+// records a pending request that a super_admin resolves from Master Admin
+// (which issues a temporary password via the existing reset endpoint).
+// Requesting never reveals whether an email exists.
+// =====================================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS password_reset_requests (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    user_id TEXT REFERENCES users(id),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','resolved','dismissed')),
+    note TEXT,
+    requested_ip TEXT,
+    created_at TEXT NOT NULL,
+    resolved_at TEXT,
+    resolved_by TEXT REFERENCES users(id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_pwreset_status ON password_reset_requests(status);
+  CREATE INDEX IF NOT EXISTS idx_pwreset_created ON password_reset_requests(created_at DESC);
+`);
+console.log("Migration: password_reset_requests ready");
+

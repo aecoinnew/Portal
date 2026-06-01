@@ -4,7 +4,8 @@ import jwt, { type SignOptions } from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import type { AuthUser } from "../../lib/types/domain.js";
-import { db } from "../db/connection.js";
+import { db, nowIso, uid } from "../db/connection.js";
+import { checkPassword } from "../../lib/utils/password.js";
 import { authenticate, jwtSecret, type AuthedRequest } from "../middleware/auth.js";
 import { ApiError } from "../middleware/error.js";
 
@@ -97,6 +98,22 @@ authRouter.get("/me", authenticate, (req, res) => {
   res.json({ user: (req as AuthedRequest).user });
 });
 
+// Refresh: issue a new token for an already-authenticated, active user.
+// Lets the client extend the session silently while the user stays active,
+// without forcing a re-login when the original token nears expiry.
+authRouter.post("/refresh", authenticate, (req, res, next) => {
+  try {
+    const user = (req as AuthedRequest).user;
+    const signOptions: SignOptions = {
+      expiresIn: (process.env.JWT_EXPIRES_IN ?? "8h") as SignOptions["expiresIn"]
+    };
+    const token = jwt.sign({ sub: user.id, role: user.role }, jwtSecret(), signOptions);
+    res.json({ token, user });
+  } catch (error) {
+    next(error);
+  }
+});
+
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string().min(12).max(128)
@@ -118,6 +135,15 @@ authRouter.post("/change-password", authenticate, async (req, res, next) => {
       throw new ApiError(400, "New password must differ from current", "weak_password");
     }
 
+    const policy = checkPassword(body.newPassword);
+    if (!policy.ok) {
+      throw new ApiError(
+        400,
+        `Password does not meet requirements: ${policy.failures.join(", ")}.`,
+        "weak_password"
+      );
+    }
+
     const newHash = await bcrypt.hash(body.newPassword, 12);
     db.prepare(
       "UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = datetime('now') WHERE id = ?"
@@ -129,7 +155,60 @@ authRouter.post("/change-password", authenticate, async (req, res, next) => {
   }
 });
 
-// ===================== MFA endpoints =====================
+// ===================== Forgot password =====================
+// No SMTP on this deployment: record a pending request that a super_admin
+// resolves from Master Admin. The response is identical whether or not the
+// email exists, so this endpoint cannot be used to enumerate accounts.
+const forgotLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: { message: "Too many requests. Please try again later.", code: "rate_limited" }
+  }
+});
+
+const forgotSchema = z.object({
+  email: z.string().email().max(200)
+});
+
+authRouter.post("/forgot-password", forgotLimiter, (req, res, next) => {
+  try {
+    const body = forgotSchema.parse(req.body);
+    const email = body.email.trim().toLowerCase();
+
+    const user = db
+      .prepare("SELECT id, status FROM users WHERE email = ? COLLATE NOCASE")
+      .get(email) as { id: string; status: string } | undefined;
+
+    // Only create a request for real, active accounts. Either way, respond OK.
+    if (user && user.status === "active") {
+      // Avoid piling up duplicates: skip if a pending request already exists.
+      const existing = db
+        .prepare(
+          "SELECT id FROM password_reset_requests WHERE user_id = ? AND status = 'pending'"
+        )
+        .get(user.id) as { id: string } | undefined;
+
+      if (!existing) {
+        const ip = (req.headers["x-real-ip"] as string) || req.ip || null;
+        db.prepare(
+          `INSERT INTO password_reset_requests (id, email, user_id, status, requested_ip, created_at)
+           VALUES (?, ?, ?, 'pending', ?, ?)`
+        ).run(uid("pwr"), email, user.id, ip, nowIso());
+      }
+    }
+
+    res.json({
+      ok: true,
+      message:
+        "If an account exists for that email, an administrator has been notified to assist with a password reset."
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 import { generateSecret, buildOtpAuthUrl, encryptSecret, decryptSecret as decryptSecret2, verifyTotp as verifyTotp2, getUserMfaState } from "../services/mfaService.js";
 import QRCode from "qrcode";
 

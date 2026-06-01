@@ -9,15 +9,20 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  Moon,
   Package,
   Settings,
   ShieldCheck,
+  Sun,
   TrendingUp,
+  UserRound,
   UserRoundCog,
   UsersRound
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { useTheme } from "@/contexts/theme-context";
+import { useI18n } from "@/contexts/i18n-context";
 import { BRAND } from "@/lib/branding/config";
 import { cn } from "@/lib/utils/cn";
 import { initials } from "@/lib/utils/format";
@@ -25,38 +30,46 @@ import type { UserRole } from "@/lib/types/domain";
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: LucideIcon;
   badge?: number;
 };
 
 const clientNav: NavItem[] = [
-  { href: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/client/portfolio", label: "Portfolio", icon: TrendingUp },
-  { href: "/client/statements", label: "Statements", icon: FileText },
-  { href: "/client/requests", label: "Requests", icon: Clock3 }
+  { href: "/client/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/client/portfolio", labelKey: "nav.portfolio", icon: TrendingUp },
+  { href: "/client/statements", labelKey: "nav.statements", icon: FileText },
+  { href: "/client/requests", labelKey: "nav.requests", icon: Clock3 },
+  { href: "/client/profile", labelKey: "nav.profile", icon: UserRound }
 ];
 
 const adminNav: NavItem[] = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/clients", label: "Clients", icon: UsersRound },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/portfolios", label: "Portfolios", icon: TrendingUp },
-  { href: "/admin/pricing", label: "Pricing", icon: CircleDollarSign },
-  { href: "/admin/requests", label: "Requests", icon: Clock3 },
-  { href: "/admin/statements", label: "Statements", icon: FileText },
-  { href: "/admin/approvals", label: "Approvals", icon: ShieldCheck },
-  { href: "/admin/settings", label: "Settings", icon: Settings }
+  { href: "/admin/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/admin/clients", labelKey: "nav.clients", icon: UsersRound },
+  { href: "/admin/products", labelKey: "nav.products", icon: Package },
+  { href: "/admin/portfolios", labelKey: "nav.portfolios", icon: TrendingUp },
+  { href: "/admin/pricing", labelKey: "nav.pricing", icon: CircleDollarSign },
+  { href: "/admin/requests", labelKey: "nav.requests", icon: Clock3 },
+  { href: "/admin/statements", labelKey: "nav.statements", icon: FileText },
+  { href: "/admin/approvals", labelKey: "nav.approvals", icon: ShieldCheck },
+  { href: "/admin/settings", labelKey: "nav.settings", icon: Settings }
 ];
 
 export function PortalShell({ role, children }: { role: UserRole; children: ReactNode }) {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { t, locale, toggleLocale } = useI18n();
   const pathname = usePathname();
   const admin = role === "admin";
-  const nav = admin ? adminNav : clientNav;
+  const isSuperAdmin = user?.role === "super_admin";
+  const nav = admin
+    ? isSuperAdmin
+      ? [...adminNav, { href: "/admin/master", labelKey: "nav.master", icon: UserRoundCog }]
+      : adminNav
+    : clientNav;
   const active = nav.find((item) => pathname.startsWith(item.href));
-  const title = active?.label ?? (admin ? "Admin" : "Client portal");
-  const timestamp = new Intl.DateTimeFormat("en-GB", {
+  const title = active ? t(active.labelKey) : admin ? t("nav.backoffice") : t("nav.portfolioSection");
+  const timestamp = new Intl.DateTimeFormat(locale === "ar" ? "ar-AE" : "en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -81,7 +94,7 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2.5 py-3">
-          <NavSection label={admin ? "Backoffice" : "Portfolio"} admin={admin} />
+          <NavSection label={admin ? t("nav.backoffice") : t("nav.portfolioSection")} admin={admin} />
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -98,8 +111,8 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
               )}
             >
               <item.icon className="h-[15px] w-[15px] shrink-0" />
-              <span>{item.label}</span>
-              {item.badge ? <span className="ml-auto rounded-full bg-gold px-1.5 text-[10px] text-white">{item.badge}</span> : null}
+              <span>{t(item.labelKey)}</span>
+              {item.badge ? <span className="ms-auto rounded-full bg-gold px-1.5 text-[10px] text-white">{item.badge}</span> : null}
             </Link>
           ))}
         </nav>
@@ -117,10 +130,10 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
             <div className="min-w-0 flex-1">
               <div className={cn("truncate text-[12px] font-medium", admin ? "text-white" : "text-slate-900")}>{user?.name}</div>
               <div className={cn("text-[10px]", admin ? "text-white/45" : "text-slate-500")}>
-                {admin ? "Administrator" : "Client account"}
+                {admin ? t("common.administrator") : t("common.clientAccount")}
               </div>
             </div>
-            <button className={cn("rounded p-1.5", admin ? "text-white/60 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-slate-200")} onClick={logout} title="Sign out">
+            <button className={cn("rounded p-1.5", admin ? "text-white/60 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-slate-200")} onClick={logout} title={t("common.signOut")}>
               <LogOut className="h-4 w-4" />
             </button>
           </div>
@@ -130,8 +143,24 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
       <div className="min-w-0 flex-1 lg:ml-[248px]">
         <header className="sticky top-0 z-20 flex min-h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:px-6">
           <img src={BRAND.logoUrl} alt={BRAND.name} className="h-8 w-auto object-contain lg:hidden" />
-          <div className="font-display text-[16px] font-semibold text-slate-900">{admin ? `Admin ${title.toLowerCase()}` : title}</div>
-          <div className="ml-auto hidden text-[12px] text-slate-500 sm:block">{timestamp}</div>
+          <div className="font-display text-[16px] font-semibold text-slate-900">{title}</div>
+          <div className="ms-auto hidden text-[12px] text-slate-500 sm:block">{timestamp}</div>
+          <button
+            className="rounded-md px-2 py-1.5 text-[12px] font-semibold text-slate-500 transition hover:bg-slate-100"
+            onClick={toggleLocale}
+            title={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
+            aria-label="Toggle language"
+          >
+            {locale === "ar" ? "EN" : "ع"}
+          </button>
+          <button
+            className="rounded-md p-2 text-slate-500 transition hover:bg-slate-100"
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <button className="btn btn-secondary lg:hidden" onClick={logout}>
             <LogOut className="h-4 w-4" />
           </button>
@@ -149,7 +178,7 @@ export function PortalShell({ role, children }: { role: UserRole; children: Reac
                 )}
               >
                 <item.icon className="h-3.5 w-3.5" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             ))}
           </div>

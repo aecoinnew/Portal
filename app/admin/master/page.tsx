@@ -6,6 +6,7 @@ import { ErrorState, LoadingState } from "@/components/ui/state";
 import { apiRequest } from "@/lib/api/client";
 import { useAuth } from "@/contexts/auth-context";
 import { AssistantPanel } from "./assistant-panel";
+import { ResetRequestsPanel } from "./reset-requests-panel";
 import { formatDateTime } from "@/lib/utils/format";
 
 type MasterUser = {
@@ -152,6 +153,15 @@ export default function MasterAdminPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Reset failed");
     }
+  }
+
+  async function resetById(userId: string) {
+    const target = users.find((u) => u.id === userId);
+    if (!target) {
+      setError("User not found in list. Refresh and try again.");
+      return;
+    }
+    await resetPassword(target);
   }
 
   if (!isSuperAdmin) {
@@ -331,6 +341,8 @@ export default function MasterAdminPage() {
       </section>
 
       <AssistantPanel />
+
+      <ResetRequestsPanel onResetUser={(id) => void resetById(id)} />
     </div>
   );
 }
