@@ -5,6 +5,7 @@ import { Shield, ShieldOff, UserPlus, KeyRound, Ban, CircleCheck, Lock } from "l
 import { ErrorState, LoadingState } from "@/components/ui/state";
 import { apiRequest } from "@/lib/api/client";
 import { useAuth } from "@/contexts/auth-context";
+import { AssistantPanel } from "./assistant-panel";
 import { formatDateTime } from "@/lib/utils/format";
 
 type MasterUser = {
@@ -328,6 +329,8 @@ export default function MasterAdminPage() {
           </table>
         </div>
       </section>
+
+      <AssistantPanel />
     </div>
   );
 }

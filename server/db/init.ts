@@ -304,4 +304,67 @@ if (apTableSql && !apTableSql.sql.includes("'executing'")) {
   console.log("Migration: approval_requests.status widened to include 'executing'");
 }
 
+// =====================================================================
+// Hermes Assistant: customer-service / explainer layer.
+// assistant_config holds a single global row ('global').
+// assistant_logs records every Q/A for audit & review.
+// Explainer-only: no investment advice or decisions (enforced in prompt).
+// =====================================================================
+db.exec(`
+  CREATE TABLE IF NOT EXISTS assistant_config (
+    id TEXT PRIMARY KEY,
+    enabled INTEGER NOT NULL DEFAULT 0,
+    model TEXT NOT NULL DEFAULT 'deepseek-chat',
+    base_url TEXT NOT NULL DEFAULT 'https://api.deepseek.com/v1',
+    system_prompt TEXT NOT NULL DEFAULT '',
+    max_tokens INTEGER NOT NULL DEFAULT 600,
+    temperature REAL NOT NULL DEFAULT 0.3,
+    daily_message_limit INTEGER NOT NULL DEFAULT 50,
+    updated_at TEXT NOT NULL,
+    updated_by TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS assistant_logs (
+    id TEXT PRIMARY KEY,
+    user_id TEXT REFERENCES users(id),
+    user_role TEXT,
+    question TEXT NOT NULL,
+    answer TEXT,
+    model TEXT,
+    tokens_prompt INTEGER,
+    tokens_completion INTEGER,
+    status TEXT NOT NULL DEFAULT 'ok',
+    error TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_assistant_logs_user ON assistant_logs(user_id);
+  CREATE INDEX IF NOT EXISTS idx_assistant_logs_created ON assistant_logs(created_at DESC);
+`);
+
+// Seed the single global config row if missing.
+{
+  const existing = db.prepare("SELECT id FROM assistant_config WHERE id = 'global'").get();
+  if (!existing) {
+    const defaultPrompt = [
+      "You are the Emcoin Assistant, a customer-support and explanation helper for the Emcoin investment portal.",
+      "",
+      "STRICT SCOPE:",
+      "- You ONLY explain how the platform works, define financial/investment terms in a neutral educational way, help users navigate features, and answer general support questions.",
+      "- You DO NOT give investment advice, recommendations, or opinions. Never tell a user what to buy, sell, hold, or whether any product/price is good or bad.",
+      "- You DO NOT predict prices, returns, or market movements.",
+      "- You DO NOT make decisions on the user's behalf or perform any account actions.",
+      "",
+      "If a user asks for advice, a recommendation, a prediction, or a decision, politely decline and explain that you can only provide general information and platform support, and suggest they contact their relationship manager or a licensed advisor for personalized guidance.",
+      "",
+      "Be concise, clear, and professional. Reply in the same language the user uses (Arabic or English). Do not invent data about the user's specific portfolio, balances, or holdings; if asked, direct them to the relevant page in the portal."
+    ].join("\n");
+
+    db.prepare(
+      "INSERT INTO assistant_config (id, enabled, model, base_url, system_prompt, max_tokens, temperature, daily_message_limit, updated_at, updated_by) VALUES ('global', 0, 'deepseek-chat', 'https://api.deepseek.com/v1', ?, 600, 0.3, 50, datetime('now'), NULL)"
+    ).run(defaultPrompt);
+    console.log("Migration: seeded assistant_config global row (disabled by default)");
+  }
+}
+console.log("Migration: assistant_config + assistant_logs ready");
 

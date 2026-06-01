@@ -17,6 +17,7 @@ import { productsRouter } from "./routes/products.js";
 import { requestsRouter } from "./routes/requests.js";
 import { settingsRouter } from "./routes/settings.js";
 import { statementsRouter } from "./routes/statements.js";
+import { assistantRouter } from "./routes/assistant.js";
 
 dotenv.config();
 
@@ -74,6 +75,7 @@ export function createApp() {
   app.use("/api/requests", requestsRouter);
   app.use("/api/settings", settingsRouter);
   app.use("/api/statements", statementsRouter);
+  app.use("/api/assistant", assistantRouter);
   app.use(notFound);
   app.use(errorHandler);
 
