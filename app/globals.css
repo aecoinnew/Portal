@@ -347,3 +347,34 @@ body,
 [dir="rtl"] body {
   line-height: 1.6;
 }
+
+/* ===================================================================
+   Mobile / small-screen polish. Complements the Tailwind breakpoints
+   used in components. Keeps typography and spacing comfortable on phones.
+   =================================================================== */
+@media (max-width: 640px) {
+  body {
+    font-size: 13px;
+  }
+  .page-title {
+    font-size: 18px !important;
+  }
+  .card-header {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  /* Tables can overflow horizontally inside their scroll wrapper */
+  .table th,
+  .table td {
+    white-space: nowrap;
+  }
+  /* Tap targets a bit larger on touch */
+  .btn {
+    min-height: 36px;
+  }
+}
+
+/* Never let images/logos overflow their container */
+img {
+  max-width: 100%;
+}

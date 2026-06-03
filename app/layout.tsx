@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/contexts/theme-context";
@@ -10,6 +10,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: APP_TITLE,
   description: BRAND.tagline
+};
+
+// Proper mobile rendering: match device width, allow zoom for accessibility.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0B3D91"
 };
 
 // Runs before paint to set theme + locale/dir attributes and avoid a flash.

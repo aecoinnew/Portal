@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { Moon, Sun, KeyRound, UserCircle, ShieldCheck, Languages } from "lucide-react";
+import { useMemo, useState, type FormEvent } from "react";
+import { Moon, Sun, KeyRound, UserCircle, ShieldCheck, Languages, Check } from "lucide-react";
 import { apiRequest } from "@/lib/api/client";
 import { useAuth } from "@/contexts/auth-context";
 import { useTheme } from "@/contexts/theme-context";
 import { useI18n } from "@/contexts/i18n-context";
+import { checkPassword } from "@/lib/utils/password";
 
 export default function ClientProfilePage() {
   const { user } = useAuth();
@@ -19,6 +20,17 @@ export default function ClientProfilePage() {
   const [pwNotice, setPwNotice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Live strength evaluation for the new password field.
+  const pwCheck = useMemo(() => checkPassword(newPassword), [newPassword]);
+  const strengthColors = ["#d92d20", "#d92d20", "#d9a82d", "#3a8dde", "#039855"];
+  const requirements = [
+    { key: "pw.reqLength", ok: newPassword.length >= 12 },
+    { key: "pw.reqUpper", ok: /[A-Z]/.test(newPassword) },
+    { key: "pw.reqLower", ok: /[a-z]/.test(newPassword) },
+    { key: "pw.reqDigit", ok: /\d/.test(newPassword) },
+    { key: "pw.reqSymbol", ok: /[^A-Za-z0-9]/.test(newPassword) }
+  ];
+
   async function changePassword(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPwError(null);
@@ -28,8 +40,8 @@ export default function ClientProfilePage() {
       setPwError("New password and confirmation do not match.");
       return;
     }
-    if (newPassword.length < 12) {
-      setPwError("New password must be at least 12 characters.");
+    if (!pwCheck.ok) {
+      setPwError(t("pw.hint"));
       return;
     }
 
@@ -203,6 +215,36 @@ export default function ClientProfilePage() {
                 required
                 minLength={12}
               />
+              {newPassword ? (
+                <div className="mt-2">
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="h-1 flex-1 rounded-full"
+                        style={{
+                          background: i < pwCheck.score ? strengthColors[pwCheck.score] : "var(--bg-surface-3)"
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-1 text-[11px]" style={{ color: strengthColors[pwCheck.score] }}>
+                    {t("pw.strength")}: {t(`pw.s${pwCheck.score}`)}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                    {requirements.map((r) => (
+                      <span
+                        key={r.key}
+                        className="inline-flex items-center gap-1 text-[10px]"
+                        style={{ color: r.ok ? "var(--gain)" : "var(--fg-4)" }}
+                      >
+                        <Check className="h-3 w-3" style={{ opacity: r.ok ? 1 : 0.3 }} />
+                        {t(r.key)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
             <div>
               <label className="label">{t("profile.confirmPassword")}</label>

@@ -5,6 +5,7 @@ import { AlertCircle, ArrowLeft, ArrowRight, Lock, Shield, ShieldCheck } from "l
 import { useRouter } from "next/navigation";
 import { roleHome, useAuth } from "@/contexts/auth-context";
 import { BRAND } from "@/lib/branding/config";
+import { BrandLogo } from "@/components/layout/brand-logo";
 
 type Stage = "credentials" | "mfa";
 
@@ -62,11 +63,7 @@ export default function LoginPage() {
           <div className="absolute top-1/2 left-1/3 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
         </div>
         <div className="relative z-10">
-          <img
-            src={BRAND.logoDarkUrl}
-            alt={BRAND.name}
-            className="h-20 w-auto object-contain"
-          />
+          <BrandLogo variant="light" size={44} />
         </div>
         <div className="relative z-10">
           <h1 className="font-display text-5xl font-bold leading-tight text-white">
@@ -106,11 +103,7 @@ export default function LoginPage() {
       <section className="flex flex-1 flex-col items-center justify-center bg-white px-8 py-12 lg:px-16">
         <div className="w-full max-w-md">
           <div className="mb-10 flex justify-center lg:hidden">
-            <img
-              src={BRAND.logoUrl}
-              alt={BRAND.name}
-              className="h-20 w-auto object-contain sm:h-24 md:h-28"
-            />
+            <BrandLogo variant="dark" size={40} />
           </div>
 
           <div className="mb-10 text-center lg:text-left">
