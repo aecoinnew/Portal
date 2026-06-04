@@ -65,22 +65,22 @@ const insertUser = db.prepare(`
 
 const users = [
   // Super Admins (maker + checker)
-  { id: "usr_sa_ahmed",    name: "Ahmed Al-Rashid",     email: "ahmed@emcoin.local",     role: "super_admin", status: "active", phone: "+971501000001", rm: null },
-  { id: "usr_sa_sara",     name: "Sara Al-Mansouri",    email: "sara@emcoin.local",      role: "super_admin", status: "active", phone: "+971501000002", rm: null },
+  { id: "usr_sa_ahmed",    name: "Ahmed Al-Rashid",     email: "ahmed@eisax.com",     role: "super_admin", status: "active", phone: "+971501000001", rm: null },
+  { id: "usr_sa_sara",     name: "Sara Al-Mansouri",    email: "sara@eisax.com",      role: "super_admin", status: "active", phone: "+971501000002", rm: null },
   // Operations
-  { id: "usr_ops_omar",    name: "Omar Khalil",         email: "omar.ops@emcoin.local",  role: "operations",  status: "active", phone: "+971501000003", rm: null },
+  { id: "usr_ops_omar",    name: "Omar Khalil",         email: "omar.ops@eisax.com",  role: "operations",  status: "active", phone: "+971501000003", rm: null },
   // Compliance
-  { id: "usr_comp_layla",  name: "Layla Hassan",        email: "layla.comp@emcoin.local",role: "compliance",  status: "active", phone: "+971501000004", rm: null },
+  { id: "usr_comp_layla",  name: "Layla Hassan",        email: "layla.comp@eisax.com",role: "compliance",  status: "active", phone: "+971501000004", rm: null },
   // Relationship Manager
-  { id: "usr_rm_khalid",   name: "Khalid Al-Dosari",    email: "khalid.rm@emcoin.local", role: "relationship_manager", status: "active", phone: "+971501000005", rm: null },
+  { id: "usr_rm_khalid",   name: "Khalid Al-Dosari",    email: "khalid.rm@eisax.com", role: "relationship_manager", status: "active", phone: "+971501000005", rm: null },
   // Finance
-  { id: "usr_fin_mona",    name: "Mona Al-Suwaidi",     email: "mona.fin@emcoin.local",  role: "finance",     status: "active", phone: "+971501000006", rm: null },
+  { id: "usr_fin_mona",    name: "Mona Al-Suwaidi",     email: "mona.fin@eisax.com",  role: "finance",     status: "active", phone: "+971501000006", rm: null },
   // Auditor
-  { id: "usr_aud_tariq",   name: "Tariq Al-Balushi",    email: "tariq.aud@emcoin.local", role: "auditor",     status: "active", phone: "+971501000007", rm: null },
+  { id: "usr_aud_tariq",   name: "Tariq Al-Balushi",    email: "tariq.aud@eisax.com", role: "auditor",     status: "active", phone: "+971501000007", rm: null },
   // Clients
-  { id: "usr_client_faisal", name: "Faisal Al-Harbi",   email: "faisal@client.emcoin.local",  role: "client", status: "active", phone: "+971551000001", rm: "Khalid Al-Dosari" },
-  { id: "usr_client_nora",   name: "Nora Al-Rashidi",   email: "nora@client.emcoin.local",    role: "client", status: "active", phone: "+971551000002", rm: "Khalid Al-Dosari" },
-  { id: "usr_client_hassan", name: "Hassan Al-Tamimi",  email: "hassan@client.emcoin.local",  role: "client", status: "active", phone: "+971551000003", rm: "Khalid Al-Dosari" },
+  { id: "usr_client_faisal", name: "Faisal Al-Harbi",   email: "faisal@client.eisax.com",  role: "client", status: "active", phone: "+971551000001", rm: "Khalid Al-Dosari" },
+  { id: "usr_client_nora",   name: "Nora Al-Rashidi",   email: "nora@client.eisax.com",    role: "client", status: "active", phone: "+971551000002", rm: "Khalid Al-Dosari" },
+  { id: "usr_client_hassan", name: "Hassan Al-Tamimi",  email: "hassan@client.eisax.com",  role: "client", status: "active", phone: "+971551000003", rm: "Khalid Al-Dosari" },
 ];
 
 // ============================================================
@@ -95,8 +95,8 @@ const insertProduct = db.prepare(`
 const products = [
   { id: "prd_aramco",       name: "Saudi Aramco",       symbol: "2222.SR",  type: "stock",   mode: "api",    currency: "AED", active: 1, price: 32.40 },
   { id: "prd_adnoc",        name: "ADNOC Distribution", symbol: "ADNOCDIST.AD", type: "stock", mode: "api", currency: "AED", active: 1, price: 3.85 },
-  { id: "prd_sukuk_alpha",  name: "Emcoin Sukuk Alpha", symbol: null,       type: "sukuk",   mode: "manual", currency: "AED", active: 1, price: 1005.25 },
-  { id: "prd_sukuk_beta",   name: "Emcoin Sukuk Beta",  symbol: null,       type: "sukuk",   mode: "manual", currency: "AED", active: 1, price: 998.50 },
+  { id: "prd_sukuk_alpha",  name: "EisaX Sukuk Alpha", symbol: null,       type: "sukuk",   mode: "manual", currency: "AED", active: 1, price: 1005.25 },
+  { id: "prd_sukuk_beta",   name: "EisaX Sukuk Beta",  symbol: null,       type: "sukuk",   mode: "manual", currency: "AED", active: 1, price: 998.50 },
   { id: "prd_btc",          name: "Bitcoin",            symbol: "BTC-USD",  type: "crypto",  mode: "api",    currency: "USD", active: 1, price: 108500 },
   { id: "prd_eth",          name: "Ethereum",           symbol: "ETH-USD",  type: "crypto",  mode: "api",    currency: "USD", active: 1, price: 2580 },
   { id: "prd_mena_growth",  name: "MENA Growth Fund",   symbol: null,       type: "fund",    mode: "manual", currency: "AED", active: 1, price: 712.30 },
@@ -277,7 +277,7 @@ db.transaction(() => {
 
   // Audit logs (tell the story)
   const auditEntries = [
-    { user: "usr_sa_ahmed",   action: "master.user.created",        entity: "user",             entityId: "usr_ops_omar",       meta: { email: "omar.ops@emcoin.local", role: "operations" }, age: 30 },
+    { user: "usr_sa_ahmed",   action: "master.user.created",        entity: "user",             entityId: "usr_ops_omar",       meta: { email: "omar.ops@eisax.com", role: "operations" }, age: 30 },
     { user: "usr_ops_omar",   action: "price.update.submitted",     entity: "product",          entityId: "prd_sukuk_alpha",    meta: { approvalId: "apr_demo_price_001", proposedPrice: 1005.25 }, age: 3 },
     { user: "usr_sa_ahmed",   action: "approval.approved",          entity: "approval_request", entityId: "apr_demo_price_001", meta: { action: "price.updated" }, age: 3 },
     { user: "usr_sa_ahmed",   action: "approval.executed",          entity: "approval_request", entityId: "apr_demo_price_001", meta: { action: "price.updated" }, age: 3 },

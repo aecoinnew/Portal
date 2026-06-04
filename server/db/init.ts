@@ -347,7 +347,7 @@ db.exec(`
   const existing = db.prepare("SELECT id FROM assistant_config WHERE id = 'global'").get();
   if (!existing) {
     const defaultPrompt = [
-      "You are the Emcoin Assistant, a customer-support and explanation helper for the Emcoin investment portal.",
+      "You are the EisaX Wealth Assistant, a customer-support and explanation helper for the EisaX Wealth investment portal.",
       "",
       "STRICT SCOPE:",
       "- You ONLY explain how the platform works, define financial/investment terms in a neutral educational way, help users navigate features, and answer general support questions.",

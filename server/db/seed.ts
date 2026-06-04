@@ -19,7 +19,7 @@ const users = [
   {
     id: "usr_admin_mohammed",
     name: "Mohammed Al-Salem",
-    email: "admin@emcoin.local",
+    email: "admin@eisax.com",
     passwordHash: hash,
     role: "super_admin",
     status: "active",
@@ -74,7 +74,7 @@ const insertProduct = db.prepare(`
 
 const products = [
   { id: "prd_aramco", name: "Saudi Aramco", symbol: "2222.SR", type: "stock", pricingMode: "api", currency: "AED", isActive: 1, price: 32.4, source: "api" },
-  { id: "prd_sukuk_1", name: "Emcoin Sukuk I", symbol: null, type: "sukuk", pricingMode: "manual", currency: "AED", isActive: 1, price: 1003.5, source: "manual" },
+  { id: "prd_sukuk_1", name: "EisaX Sukuk I", symbol: null, type: "sukuk", pricingMode: "manual", currency: "AED", isActive: 1, price: 1003.5, source: "manual" },
   { id: "prd_btc", name: "Bitcoin", symbol: "BTC-USD", type: "crypto", pricingMode: "api", currency: "AED", isActive: 1, price: 246840, source: "api" },
   { id: "prd_mena_growth", name: "MENA Growth Fund", symbol: null, type: "fund", pricingMode: "manual", currency: "AED", isActive: 1, price: 698.5, source: "manual" },
   { id: "prd_private_eq", name: "Private Equity I", symbol: null, type: "private", pricingMode: "manual", currency: "AED", isActive: 1, price: 196, source: "manual" }
@@ -174,5 +174,5 @@ insertStatement.run({
 });
 
 console.log("Seed complete.");
-console.log(`Super Admin: admin@emcoin.local / ${password}`);
+console.log(`Super Admin: admin@eisax.com / ${password}`);
 console.log(`Client: faisal.al-harbi@example.com / ${password}`);

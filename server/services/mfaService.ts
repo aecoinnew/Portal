@@ -54,7 +54,7 @@ export function generateSecret(): string {
 
 /** Build the otpauth:// URL used by authenticator apps. */
 export function buildOtpAuthUrl(secret: string, accountName: string): string {
-  const issuer = process.env.NEXT_PUBLIC_BRAND_NAME ?? "Emcoin Portal";
+  const issuer = process.env.NEXT_PUBLIC_BRAND_NAME ?? "EisaX Wealth";
   return authenticator.keyuri(accountName, issuer, secret);
 }
 
